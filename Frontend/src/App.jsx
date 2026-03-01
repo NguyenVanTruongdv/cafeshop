@@ -7,6 +7,7 @@ function App() {
   return (
     <>
       <SinhVien />
+      <h4>Thỏ bảy màu tới chơi.....</h4>
     </>
   )
 }
