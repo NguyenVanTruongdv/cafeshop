@@ -1,27 +1,28 @@
 import { useEffect, useState } from "react";
 
-function SinhVien() {
-  const [sinhVien, setSinhVien] = useState([]);
+function Users() {
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     fetch("https://cafeshop-t0zr.onrender.com/api/users")
       .then(res => res.json())
       .then(data => {
-        setSinhVien(data); 
+        setUsers(data);
       })
       .catch(err => console.error(err));
   }, []);
 
   return (
     <div>
-      <h2>Danh sách sinh viên</h2>
-      {sinhVien.map((sv) => (
-        <p key={sv.id}>
-          {sv.ten} - {sv.mssv} - {sv.lop}
+      <h2>Users List</h2>
+
+      {users.map((user) => (
+        <p key={user.id}>
+          {user.id} - {user.username} - {user.email}
         </p>
       ))}
     </div>
   );
 }
 
-export default SinhVien;
+export default Users;
