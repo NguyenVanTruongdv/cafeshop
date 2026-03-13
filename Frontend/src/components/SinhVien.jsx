@@ -4,7 +4,7 @@ function SinhVien() {
   const [sinhVien, setSinhVien] = useState([]);
 
   useEffect(() => {
-    fetch("https://quanlysinhvien-v8iv.onrender.com/api/sinhvien")
+    fetch("https://cafeshop-t0zr.onrender.com/api/users")
       .then(res => res.json())
       .then(data => {
         setSinhVien(data); 
