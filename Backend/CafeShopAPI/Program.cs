@@ -42,4 +42,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapGet("/ping", () =>
+{
+    return Results.Ok("API is alive");
+});
 app.Run();
