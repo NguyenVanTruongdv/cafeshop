@@ -18,7 +18,7 @@ function Users() {
 
       {users.map((user) => (
         <p key={user.id}>
-          {user.id} - {user.ten} - {user.email}
+           {user.id} - {user.ten} - {user.mssv} - {user.lop}
         </p>
       ))}
     </div>
