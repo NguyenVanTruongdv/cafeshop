@@ -3,16 +3,6 @@ using CafeShopAPI.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ===========================
-// Configure Port for Render
-// ===========================
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://*:{port}");
-
-// ===========================
-// Add Services
-// ===========================
-
 // Controllers
 builder.Services.AddControllers();
 
@@ -20,7 +10,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Database Connection
+// CORS - Allow ALL domains
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
+// Database
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -28,22 +30,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-// ===========================
-// Middleware
-// ===========================
+// Enable CORS
+app.UseCors("AllowAll");
 
-// Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// HTTPS
 app.UseHttpsRedirection();
 
-// Authorization
 app.UseAuthorization();
 
-// Map Controllers
 app.MapControllers();
 
-// Run App
 app.Run();
