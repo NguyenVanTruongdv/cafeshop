@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "13FZ/yh+6Sw=",
+  "dgSpecHash": "QPXSgLtW+c0=",
   "success": true,
-  "projectFilePath": "E:\\HK2_2025_2026\\QLSV\\Backend\\CafeShopApi\\CafeShopAPI.csproj",
+  "projectFilePath": "E:\\HK2_2025_2026\\cafeShop\\Backend\\CafeShopAPI\\CafeShopAPI.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\truon\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\truon\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.13\\microsoft.aspnetcore.openapi.9.0.13.nupkg.sha512",

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\HK2_2025_2026\\QLSV\\Backend\\CafeShopApi\\CafeShopAPI.csproj": {}
+    "E:\\HK2_2025_2026\\cafeShop\\Backend\\CafeShopAPI\\CafeShopAPI.csproj": {}
   },
   "projects": {
-    "E:\\HK2_2025_2026\\QLSV\\Backend\\CafeShopApi\\CafeShopAPI.csproj": {
+    "E:\\HK2_2025_2026\\cafeShop\\Backend\\CafeShopAPI\\CafeShopAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\HK2_2025_2026\\QLSV\\Backend\\CafeShopApi\\CafeShopAPI.csproj",
+        "projectUniqueName": "E:\\HK2_2025_2026\\cafeShop\\Backend\\CafeShopAPI\\CafeShopAPI.csproj",
         "projectName": "CafeShopAPI",
-        "projectPath": "E:\\HK2_2025_2026\\QLSV\\Backend\\CafeShopApi\\CafeShopAPI.csproj",
+        "projectPath": "E:\\HK2_2025_2026\\cafeShop\\Backend\\CafeShopAPI\\CafeShopAPI.csproj",
         "packagesPath": "C:\\Users\\truon\\.nuget\\packages\\",
-        "outputPath": "E:\\HK2_2025_2026\\QLSV\\Backend\\CafeShopApi\\obj\\",
+        "outputPath": "E:\\HK2_2025_2026\\cafeShop\\Backend\\CafeShopAPI\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\truon\\AppData\\Roaming\\NuGet\\NuGet.Config"
