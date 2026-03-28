@@ -1,5 +1,6 @@
+using CafeShopAPI.Services;
 using Microsoft.EntityFrameworkCore;
-// using CafeShopAPI.Data;
+using CafeShopAPI.Data;
 // using CafeShopAPI.Services;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,11 +26,11 @@ builder.Services.AddCors(options =>
 // Database
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// builder.Services.AddDbContext<AppDbContext>(options =>
-//     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-// builder.Services.AddScoped<DanhMucService>();
-// builder.Services.AddScoped<SanPhamService>();
+builder.Services.AddScoped<CategoryService>();
+
 var app = builder.Build();
 
 // Enable CORS
