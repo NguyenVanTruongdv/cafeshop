@@ -275,7 +275,8 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("password");
             entity.Property(e => e.Role)
                 .HasMaxLength(20)
-                .HasColumnName("role");
+                .HasColumnName("role")
+                .HasConversion<string>();
         });
 
         OnModelCreatingPartial(modelBuilder);
