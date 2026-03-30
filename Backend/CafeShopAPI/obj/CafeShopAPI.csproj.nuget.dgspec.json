@@ -1,30 +1,30 @@
 {
   "format": 1,
   "restore": {
-    "E:\\HK2_2025_2026\\cafeShop\\Backend\\CafeShopAPI\\CafeShopAPI.csproj": {}
+    "E:\\VanTruong\\cafeshop\\Backend\\CafeShopAPI\\CafeShopAPI.csproj": {}
   },
   "projects": {
-    "E:\\HK2_2025_2026\\cafeShop\\Backend\\CafeShopAPI\\CafeShopAPI.csproj": {
+    "E:\\VanTruong\\cafeshop\\Backend\\CafeShopAPI\\CafeShopAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\HK2_2025_2026\\cafeShop\\Backend\\CafeShopAPI\\CafeShopAPI.csproj",
+        "projectUniqueName": "E:\\VanTruong\\cafeshop\\Backend\\CafeShopAPI\\CafeShopAPI.csproj",
         "projectName": "CafeShopAPI",
-        "projectPath": "E:\\HK2_2025_2026\\cafeShop\\Backend\\CafeShopAPI\\CafeShopAPI.csproj",
-        "packagesPath": "C:\\Users\\truon\\.nuget\\packages\\",
-        "outputPath": "E:\\HK2_2025_2026\\cafeShop\\Backend\\CafeShopAPI\\obj\\",
+        "projectPath": "E:\\VanTruong\\cafeshop\\Backend\\CafeShopAPI\\CafeShopAPI.csproj",
+        "packagesPath": "C:\\Users\\htpth\\.nuget\\packages\\",
+        "outputPath": "E:\\VanTruong\\cafeshop\\Backend\\CafeShopAPI\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\truon\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\htpth\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net9.0"
+          "net8.0"
         ],
         "sources": {
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net9.0": {
-            "targetAlias": "net9.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {}
           }
         },
@@ -37,30 +37,29 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.300"
+        }
       },
       "frameworks": {
-        "net9.0": {
-          "targetAlias": "net9.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
-              "version": "[9.0.13, )"
+              "version": "[8.0.0, )"
             },
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[9.0.0, )"
+              "version": "[8.0.0, )"
             },
             "Pomelo.EntityFrameworkCore.MySql": {
               "target": "Package",
-              "version": "[9.0.0, )"
+              "version": "[8.0.0, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
-              "version": "[6.7.0, )"
+              "version": "[6.5.0, )"
             }
           },
           "imports": [
@@ -82,7 +81,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.311/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.419/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
