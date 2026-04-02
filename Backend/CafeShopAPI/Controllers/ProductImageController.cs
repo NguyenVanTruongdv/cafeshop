@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
+
 using CafeShopAPI.DTOs;
 
 [ApiController]
 [Route("api/products")]
+
 public class ProductImageController : ControllerBase
 {
     private readonly ProductImageService sv;
+
 
     public ProductImageController(ProductImageService _service)
     {
@@ -45,6 +48,7 @@ public class ProductImageController : ControllerBase
 
         return Ok("Deleted");
     }
+
 
     // 🔹 4. Set ảnh chính
     [HttpPut("{productId}/images/{imageId}/set-main")]

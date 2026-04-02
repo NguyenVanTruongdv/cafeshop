@@ -56,5 +56,15 @@
     "C:\\Users\\truon\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\8.0.24\\microsoft.aspnetcore.app.ref.8.0.24.nupkg.sha512",
     "C:\\Users\\truon\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\8.0.24\\microsoft.netcore.app.host.win-x64.8.0.24.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "Undefined",
+      "level": "Warning",
+      "message": "Problem reading the cache file E:\\HK2_2025_2026\\cafeShop\\Backend\\CafeShopAPI\\obj\\project.nuget.cache : '<' is an invalid start of a property name. Expected a '\"'. Path: $ | LineNumber: 2 | BytePositionInLine: 0.",
+      "projectPath": "E:\\HK2_2025_2026\\cafeShop\\Backend\\CafeShopAPI\\CafeShopAPI.csproj",
+      "warningLevel": 1,
+      "filePath": "E:\\HK2_2025_2026\\cafeShop\\Backend\\CafeShopAPI\\CafeShopAPI.csproj",
+      "targetGraphs": []
+    }
+  ]
 }

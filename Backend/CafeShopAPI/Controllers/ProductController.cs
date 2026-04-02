@@ -1,6 +1,8 @@
+
 using Microsoft.AspNetCore.Mvc;
 
 [Route("api/products")]
+
 [ApiController]
 public class ProductController : ControllerBase
 {
@@ -33,6 +35,7 @@ public class ProductController : ControllerBase
         if (result == null)
             return BadRequest("Thêm thất bại");
         return Ok("Thêm thành công");
+
     }
 
     [HttpPut("{id}")]
