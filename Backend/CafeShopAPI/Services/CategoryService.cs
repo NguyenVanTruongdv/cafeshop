@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore; 
-using CafeShopAPI.DTO;
+using CafeShopAPI.DTOs;
 using CafeShopAPI.Models;
 using CafeShopAPI.Data;
 

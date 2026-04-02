@@ -1,4 +1,4 @@
-namespace CafeShopAPI.DTO
+namespace CafeShopAPI.DTOs
 {
     public  class CategoryDTO
     {

@@ -30,7 +30,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 builder.Services.AddScoped<CategoryService>();
-
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<ProductVariantService>();
+builder.Services.AddScoped<ProductImageService>();
 var app = builder.Build();
 
 // Enable CORS
