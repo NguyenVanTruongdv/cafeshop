@@ -1,4 +1,5 @@
 ﻿using CafeShopAPI.Data;
+using CafeShopAPI.DTOs;
 using CafeShopAPI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -58,6 +59,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // builder.Services.AddScoped<SanPhamService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<AddressService>();
+builder.Services.AddHttpContextAccessor();
+
+// DTOs
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 var app = builder.Build();
 
 // Enable CORS

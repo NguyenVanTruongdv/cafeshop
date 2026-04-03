@@ -3,44 +3,48 @@
   "WorkspaceRootPath": "D:\\XD WEB\\Backend\\CafeShopAPI\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\services\\jwtservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:services\\jwtservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\dtos\\authdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:dtos\\authdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\enums\\userrole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:enums\\userrole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\dtos\\userdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:dtos\\userdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\cafeshopapi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:cafeshopapi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\services\\addressservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:services\\addressservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\dtos\\addressdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:dtos\\addressdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\models\\address.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:models\\address.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|d:\\xd web\\backend\\cafeshopapi\\dtos\\authdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{276CC8D6-0408-4AFD-900A-F54C256DEDDB}|CafeShopAPI.csproj|solutionrelative:dtos\\authdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -50,7 +54,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 10,
+          "SelectedChildIndex": 11,
           "Children": [
             {
               "$type": "Bookmark",
@@ -78,132 +82,144 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "UserRole.cs",
-              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\Enums\\UserRole.cs",
-              "RelativeDocumentMoniker": "Enums\\UserRole.cs",
-              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\Enums\\UserRole.cs",
-              "RelativeToolTip": "Enums\\UserRole.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-30T15:05:00.283Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "User.cs",
-              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\Models\\User.cs",
-              "RelativeDocumentMoniker": "Models\\User.cs",
-              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\Models\\User.cs",
-              "RelativeToolTip": "Models\\User.cs",
-              "ViewState": "AgIAAAQAAAAAAAAAAAAmwBgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-30T15:02:34.792Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "JwtService.cs",
-              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\Services\\JwtService.cs",
-              "RelativeDocumentMoniker": "Services\\JwtService.cs",
-              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\Services\\JwtService.cs",
-              "RelativeToolTip": "Services\\JwtService.cs",
-              "ViewState": "AgIAABIAAAAAAAAAAAA2wC4AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-30T13:04:12.267Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "AuthDto.cs",
-              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\DTOs\\AuthDto.cs",
-              "RelativeDocumentMoniker": "DTOs\\AuthDto.cs",
-              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\DTOs\\AuthDto.cs",
-              "RelativeToolTip": "DTOs\\AuthDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAWAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-30T13:01:30.234Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "AuthController.cs",
-              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\Controllers\\AuthController.cs",
-              "RelativeDocumentMoniker": "Controllers\\AuthController.cs",
-              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\Controllers\\AuthController.cs",
-              "RelativeToolTip": "Controllers\\AuthController.cs",
-              "ViewState": "AgIAABAAAAAAAAAAAAAQwBwAAAAJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-29T16:35:44.532Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 5,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\appsettings.json",
-              "RelativeDocumentMoniker": "appsettings.json",
-              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\appsettings.json",
-              "RelativeToolTip": "appsettings.json",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAwAAAAcAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-03-29T15:38:54.813Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "AppDbContext.cs",
-              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\Data\\AppDbContext.cs",
-              "RelativeDocumentMoniker": "Data\\AppDbContext.cs",
-              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\Data\\AppDbContext.cs",
-              "RelativeToolTip": "Data\\AppDbContext.cs",
-              "ViewState": "AgIAAAsBAAAAAAAAAAAkwBYBAAAoAAAAAAAAAA==",
+              "Title": "AddressDto.cs",
+              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\DTOs\\AddressDto.cs",
+              "RelativeDocumentMoniker": "DTOs\\AddressDto.cs",
+              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\DTOs\\AddressDto.cs",
+              "RelativeToolTip": "DTOs\\AddressDto.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAA1wAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-30T12:50:20.549Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Program.cs",
-              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAbAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-29T16:10:10.225Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "AuthService.cs",
-              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\Services\\AuthService.cs",
-              "RelativeDocumentMoniker": "Services\\AuthService.cs",
-              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\Services\\AuthService.cs",
-              "RelativeToolTip": "Services\\AuthService.cs",
-              "ViewState": "AgIAACoAAAAAAAAAAAAUwEUAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-29T16:09:11.54Z",
+              "WhenOpened": "2026-04-03T05:56:42.508Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 9,
-              "Title": "CafeShopAPI.csproj",
-              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\CafeShopAPI.csproj",
-              "RelativeDocumentMoniker": "CafeShopAPI.csproj",
-              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\CafeShopAPI.csproj",
-              "RelativeToolTip": "CafeShopAPI.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-03-29T15:39:46.528Z"
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAABsAAAAAAAAAAAAAADYAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-04-02T12:51:29.923Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Address.cs",
+              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\Models\\Address.cs",
+              "RelativeDocumentMoniker": "Models\\Address.cs",
+              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\Models\\Address.cs",
+              "RelativeToolTip": "Models\\Address.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAA3wBUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-01T12:49:29.975Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AuthService.cs",
+              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\Services\\AuthService.cs",
+              "RelativeDocumentMoniker": "Services\\AuthService.cs",
+              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\Services\\AuthService.cs",
+              "RelativeToolTip": "Services\\AuthService.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAAAzwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-01T05:09:25.146Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "AddressService.cs",
+              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\Services\\AddressService.cs",
+              "RelativeDocumentMoniker": "Services\\AddressService.cs",
+              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\Services\\AddressService.cs",
+              "RelativeToolTip": "Services\\AddressService.cs",
+              "ViewState": "AgIAABYAAAAAAAAAAAD4vxoAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-01T05:09:27.161Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "UserService.cs",
+              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\Services\\UserService.cs",
+              "RelativeDocumentMoniker": "Services\\UserService.cs",
+              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\Services\\UserService.cs",
+              "RelativeToolTip": "Services\\UserService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T16:49:37.143Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "UserController.cs",
+              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\Controllers\\UserController.cs",
+              "RelativeDocumentMoniker": "Controllers\\UserController.cs",
+              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\Controllers\\UserController.cs",
+              "RelativeToolTip": "Controllers\\UserController.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAA8AAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T17:03:05.037Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "User.cs",
+              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\Models\\User.cs",
+              "RelativeDocumentMoniker": "Models\\User.cs",
+              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\Models\\User.cs",
+              "RelativeToolTip": "Models\\User.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T16:52:40.176Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "UserDto.cs",
+              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\DTOs\\UserDto.cs",
+              "RelativeDocumentMoniker": "DTOs\\UserDto.cs",
+              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\DTOs\\UserDto.cs",
+              "RelativeToolTip": "DTOs\\UserDto.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABAAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T16:51:11.388Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "AuthDto.cs",
+              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\DTOs\\AuthDto.cs",
+              "RelativeDocumentMoniker": "DTOs\\AuthDto.cs",
+              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\DTOs\\AuthDto.cs",
+              "RelativeToolTip": "DTOs\\AuthDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T16:50:35.15Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\XD WEB\\Backend\\CafeShopAPI\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "D:\\XD WEB\\Backend\\CafeShopAPI\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T13:07:36.228Z",
+              "EditorCaption": ""
             }
           ]
         }

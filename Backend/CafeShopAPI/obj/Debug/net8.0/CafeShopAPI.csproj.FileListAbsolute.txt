@@ -113,3 +113,5 @@ D:\XD WEB\Backend\CafeShopAPI\obj\Debug\net8.0\staticwebassets\msbuild.build.Caf
 D:\XD WEB\Backend\CafeShopAPI\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.CafeShopAPI.props
 D:\XD WEB\Backend\CafeShopAPI\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.CafeShopAPI.props
 D:\XD WEB\Backend\CafeShopAPI\obj\Debug\net8.0\staticwebassets.pack.json
+D:\XD WEB\Backend\CafeShopAPI\bin\Debug\net8.0\AutoMapper.dll
+D:\XD WEB\Backend\CafeShopAPI\bin\Debug\net8.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
