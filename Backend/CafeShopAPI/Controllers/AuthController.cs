@@ -22,9 +22,8 @@ namespace CafeShopAPI.Controllers
         {
             var result = await _authService.Login(re);
 
-            if (result is string err)
-                return BadRequest(err);
-
+            if (result.Data == null)
+                return BadRequest(result);
             return Ok(result);
         }
 
@@ -32,8 +31,8 @@ namespace CafeShopAPI.Controllers
         public async Task<IActionResult> Register(AuthDto.RegisterRequest re)
         {
             var result = await _authService.Register(re);
-            if (result is string err)
-                return BadRequest(err);
+            if (result.Data == null)
+                return BadRequest(result);
             return Ok(result);
         }
     }

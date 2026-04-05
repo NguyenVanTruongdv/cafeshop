@@ -5,6 +5,7 @@ using CafeShopAPI.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
 using static CafeShopAPI.DTOs.AuthDto;
@@ -24,10 +25,21 @@ namespace CafeShopAPI.Services
             _jwtService = jwtService;
         }
 
-        public async Task<object?> Register(RegisterRequest re)
+        public async Task<ApiResponse<object>> Register(RegisterRequest re)
         {
+            var userEmail = new MailAddress(re.Email);
+            if (userEmail.Address != re.Email)
+                return new ApiResponse<object>
+                {
+                    Message ="Email không hợp lệ",
+                    Data = null
+                };
             if (_context.Users.Any(x => x.Email == re.Email))
-                return "Email đã tồn tại";
+                return new ApiResponse<object>
+                {
+                    Message = "Email đã tồn tại",
+                    Data = null
+                };
 
             var user = new User
             {
@@ -40,28 +52,48 @@ namespace CafeShopAPI.Services
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return new { Message = "Đăng ký tài khoản thành công" };
+            return new ApiResponse<object> { 
+                Message = "Đăng ký tài khoản thành công",
+                Data= new
+                {
+                    user.Id, 
+                    user.Email,
+                    user.Name,
+                }
+            };
         }
 
 
-        public async Task<object?>Login(LoginRequest log)
+        public async Task<ApiResponse<object>> Login(LoginRequest log)
         {
             var user = _context.Users.FirstOrDefault(x => x.Email.Trim() == log.Email.Trim());
             if (user == null)
-                return "Sai email hoặc mật khẩu";
+                return new ApiResponse<object>
+                {
+                    Message = "Sai email hoặc mật khẩu không đúng",
+                    Data  = null
+                };
             bool check = BCrypt.Net.BCrypt.Verify(log.Password, user.Password);
-            if (!check) return "Sai email hoặc mật khẩu";
+            if (!check) return new ApiResponse<object>
+            {
+                Message = "Sai email hoặc mật khẩu không đúng",
+                Data  = null
+            };
 
             var token = _jwtService.GenerateJwtToken(user);
-            return new
+            return new ApiResponse<object>
             {
-                token,
-                user = new
+                Message = "Đăng nhập thành công",
+                Data  = new
                 {
-                    user.Id,
-                    user.Email,
-                    user.Name,
-                    user.Role
+                    token,
+                    user = new
+                    {
+                        user.Id,
+                        user.Name,
+                        user.Email,
+                        user.Role,
+                    }
                 }
             };
         }
