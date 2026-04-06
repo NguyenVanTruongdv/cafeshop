@@ -26,6 +26,22 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "CafeShopAPI.Controllers.AddressController",
+    "Method": "DeleteAddress",
+    "RelativePath": "api/Address/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "CafeShopAPI.Controllers.AuthController",
     "Method": "Login",
     "RelativePath": "api/Auth/login",
@@ -52,6 +68,22 @@
       {
         "Name": "re",
         "Type": "CafeShopAPI.DTOs.AuthDto\u002BRegisterRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CafeShopAPI.Controllers.AuthController",
+    "Method": "ResetPassword",
+    "RelativePath": "api/Auth/reset-password",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "re",
+        "Type": "CafeShopAPI.DTOs.AuthDto\u002BResetPasswordRequest",
         "IsRequired": true
       }
     ],

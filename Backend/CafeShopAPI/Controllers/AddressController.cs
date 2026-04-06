@@ -28,5 +28,14 @@ namespace CafeShopAPI.Controllers
             return Ok(await _service.GetMy());
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAddress(int id)
+        {
+            var result = await _service.deleteById(id);
+            if( result == null)
+                return BadRequest(result);
+            return NotFound(result);
+        }
+
     }
 }
