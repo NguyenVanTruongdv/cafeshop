@@ -14,9 +14,10 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] string? name)
     {
-        return Ok(await sv.GetAll());
+        var result = await sv.getByName(name);
+        return Ok(result);
     }
 
     [HttpGet("{id}")]
@@ -55,4 +56,6 @@ public class ProductController : ControllerBase
 
         return Ok("Deleted successfully");
     }
+
+
 }

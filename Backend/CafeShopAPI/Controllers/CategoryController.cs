@@ -16,9 +16,9 @@ namespace CafeShopAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string? name)
         {
-            var data = await sv.GetAll();
+            var data = await sv.GetAll(name);
             return Ok(data);
         }
 

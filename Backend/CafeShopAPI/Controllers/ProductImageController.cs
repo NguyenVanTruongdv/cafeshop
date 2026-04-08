@@ -38,6 +38,16 @@ public class ProductImageController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+        [HttpPut("{imageId}")]
+    public async Task<IActionResult> UpdateImage(int imageId, IFormFile file)
+    {
+        var result = await sv.UpdateImage(imageId, file);
+
+        if (result == null)
+            return NotFound();
+
+        return Ok(result);
+    }
     [HttpDelete("images/{imageId}")]
     public async Task<IActionResult> DeleteImage(int imageId)
     {

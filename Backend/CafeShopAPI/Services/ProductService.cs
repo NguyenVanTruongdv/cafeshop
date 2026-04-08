@@ -14,24 +14,27 @@ public class ProductService
     }
 
     // GET ALL
-    public async Task<List<ProductDTO>> GetAll()
-    {
-        var p = await db.Products
-            .Include(p => p.Category)
-            .Include(p => p.ProductImages)
-            .Include(p => p.ProductVariants)
-            .ToListAsync();
-        return p.Select(p => new ProductDTO
-        {
-            Id = p.Id,
-            Name = p.Name,
-            Description = p.Description,
-            CategoryName = p.Category?.Name,
-            urlImgMain = p.ProductImages.FirstOrDefault(i => i.IsMain == true).ImageUrl,
-        }).ToList();
+    // public async Task<List<ProductDTO>> GetAll()
+    // {
+    //     var products = await db.Products
+    //         .Include(p => p.Category)
+    //         .Include(p => p.ProductImages)
+    //         .ToListAsync();
 
+    //     return products.Select(p => new ProductDTO
+    //     {
+    //         Id = p.Id,
+    //         Name = p.Name,
+    //         Description = p.Description,
+    //         CategoryName = p.Category?.Name,
 
-    }
+    //         // 🔥 FIX QUAN TRỌNG
+    //         urlImgMain = p.ProductImages
+    //             .FirstOrDefault(i => i.IsMain == true)?.ImageUrl
+    //             ?? p.ProductImages.FirstOrDefault()?.ImageUrl
+    //             ?? null
+    //     }).ToList();
+    // }
 
     // GET BY ID
     public async Task<ProductInfoDTO> GetById(int id)
@@ -42,7 +45,10 @@ public class ProductService
             .Include(p => p.ProductVariants)
             .FirstOrDefaultAsync(p => p.Id == id);
 
-        if (p == null) return null;
+        if (p == null)
+        {
+            throw new Exception("Product not found");
+        }
 
         return new ProductInfoDTO
         {
@@ -50,14 +56,22 @@ public class ProductService
             Name = p.Name,
             Description = p.Description,
             CategoryName = p.Category?.Name,
-            urlImgMain = p.ProductImages.FirstOrDefault(i => i.IsMain == true).ImageUrl,
-            Images = p.ProductImages.Select(i => new ProductImgDTO
-            {
-                ImageUrl = i.ImageUrl,
-                IsMain = i.IsMain ?? false,
-            }).ToList(),
+
+            urlImgMain = p.ProductImages
+                .FirstOrDefault(i => i.IsMain == true)?.ImageUrl,
+
+          
+            Images = p.ProductImages
+                .OrderByDescending(i => i.IsMain ?? false) // sắp xếp ảnh chính lên đầu 
+                .Select(i => new ProductImgDTO
+                {
+                    ImageUrl = i.ImageUrl ?? "",
+                    IsMain = i.IsMain ?? false,
+                }).ToList(),
+
             Variants = p.ProductVariants.Select(v => new ProductVariantDTO
             {
+                Id = v.Id,
                 Weight = v.Weight,
                 Price = v.Price,
                 Stock = v.Stock
@@ -80,9 +94,7 @@ public class ProductService
             ProductVariants = new List<ProductVariant>()
         };
 
-        // =========================
-        // 👉 1. XỬ LÝ ẢNH
-        // =========================
+        
         if (dto.Images != null && dto.Images.Files != null && dto.Images.Files.Any())
         {
             var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
@@ -110,7 +122,7 @@ public class ProductService
                 });
             }
 
-            // 👉 set ảnh đầu tiên làm main
+            //Lấy ảnh đầu tiên được thêm vào để làm ảnh chính
             if (product.ProductImages.Any())
             {
                 product.ProductImages.First().IsMain = true;
@@ -171,7 +183,7 @@ public class ProductService
         if (product == null)
             return false;
 
-        // 🔥 1. Xoá file vật lý
+        // Xóa trên ổ đĩa
         foreach (var img in product.ProductImages)
         {
             var fullPath = Path.Combine("wwwroot", img.ImageUrl!.TrimStart('/'));
@@ -182,7 +194,7 @@ public class ProductService
             }
         }
 
-        // 🔥 2. Xoá DB
+        // Xóa trong DB
         db.ProductImages.RemoveRange(product.ProductImages);
         db.ProductVariants.RemoveRange(product.ProductVariants);
         db.Products.Remove(product);
@@ -191,5 +203,29 @@ public class ProductService
         await db.SaveChangesAsync();
 
         return true;
+    }
+    public async Task<List<ProductDTO>> getByName(string name)
+    {
+
+        var products = db.Products
+                        .Include(p => p.Category)
+                        .Include(p => p.ProductImages)
+                        .AsQueryable();
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            products = products.Where(p => p.Name.Contains(name));
+        }
+        return await products.Select(p => new ProductDTO
+        {
+            Id = p.Id,
+            Name = p.Name,
+            Description = p.Description,
+            CategoryName = p.Category != null ? p.Category.Name : null,
+            // 🔥 FIX QUAN TRỌNG
+            urlImgMain = p.ProductImages
+                            .Where(i => i.IsMain == true)
+                            .Select(i => i.ImageUrl).FirstOrDefault()
+        }).ToListAsync();
     }
 }

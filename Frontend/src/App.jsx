@@ -1,15 +1,16 @@
-
-import './App.css'
-import SinhVien from './components/SinhVien'
+import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
+import AppRouter from './routes/AppRouter';
+import { CartProvider } from './context/CartContext';
 
 function App() {
-
   return (
-    <>
-      <SinhVien />
-      <h4>Thỏ bảy màu tới chơi.....</h4>
-    </>
-  )
+    <CartProvider>
+      <Router>
+        <AppRouter />
+      </Router>
+    </CartProvider>
+  );
 }
 
-export default App
+export default App;
