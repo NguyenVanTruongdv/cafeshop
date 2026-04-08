@@ -29,7 +29,7 @@ namespace CafeShopAPI.Services
         }
 
         // tạo địa chỉ mới cho người dùng đang đăng nhập
-        public async Task<AddressResponse> Create(CreateAddress dto)
+        public async Task<ApiResponse<AddressResponse>> Create(CreateAddress dto)
         {
             var useId = getUserId();
 
@@ -43,15 +43,24 @@ namespace CafeShopAPI.Services
 
             _context.Add(address);
             await _context.SaveChangesAsync();
-            return _mapper.Map<AddressResponse>(address);          
+            return new ApiResponse<AddressResponse>
+            {
+                Message = "Tạo địa chỉ thành công",
+                Data  = _mapper.Map<AddressResponse>(address)
+            }; 
         }
 
         // lấy tất cả địa chỉ của người dùng đang đăng nhập
-        public async Task<List<AddressResponse>> GetMy()
+        public async Task<ApiResponse<List<AddressResponse>>> GetMy()
         {
             var userId = getUserId();
-            return await _context.Addresses.Where(x => x.UserId == userId)
+            var data = await _context.Addresses.Where(x => x.UserId == userId)
                 .ProjectTo<AddressResponse>(_mapper.ConfigurationProvider).ToListAsync();
+            return new ApiResponse<List<AddressResponse>>
+            {
+                Message = "Lấy danh sách địa chỉ thành công",
+                Data = data
+            };
         }
 
         // xóa địa chỉ mà người dùng đang đăng nhập
@@ -95,7 +104,7 @@ namespace CafeShopAPI.Services
             if (data == null)
                 return new ApiResponse<AddressResponse>
                 {
-                    Message = "Không tồn tại dữ liệu",
+                    Message = "Không tồn tại dữ liệu địa chỉ muốn sửa",
                     Data  = null
                 };
             data.AddressDetail = map.AddressDetail;
@@ -107,6 +116,39 @@ namespace CafeShopAPI.Services
             {
                 Message= "Cập nhật dữ liệu mới thành công",
                 Data  = _mapper.Map<AddressResponse>(data)
+            };
+        }
+
+        // ADMIN
+        // lấy all địa chỉ
+        public async Task<ApiResponse<List<AddressResponse>>> getAllAddressUsers()
+        {
+            var data = await _context.Addresses
+                .ProjectTo<AddressResponse>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+            return new ApiResponse<List<AddressResponse>>
+            {
+                Message = "Lấy tất cả địa chỉ thành công",
+                Data = data
+            };
+        }
+
+        // xóa địa chỉ theo id
+        public async Task<ApiResponse<AddressResponse>> deleteByIdAdmin(int id)
+        {
+            var address = await _context.Addresses.FirstOrDefaultAsync(x => x.Id == id);
+            if (address == null)
+                return new ApiResponse<AddressResponse>
+                {
+                    Message = "Không tìm thấy địa chỉ cần xóa",
+                    Data = null
+                };
+            _context.Addresses.Remove(address);
+            await _context.SaveChangesAsync();
+            return new ApiResponse<AddressResponse>
+            {
+                Message = "Địa chỉ đã được xóa",
+                Data = _mapper.Map<AddressResponse>(address)
             };
         }
     }

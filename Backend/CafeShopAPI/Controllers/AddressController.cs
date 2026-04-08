@@ -37,5 +37,34 @@ namespace CafeShopAPI.Controllers
             return NotFound(result);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAddress(int id, CreateAddress dto)
+        {
+            var result = await _service.updateAddress(id, dto);
+            if( result == null)
+                return BadRequest(result);
+            return Ok(result);
+        }
+
+        [HttpGet("address-all")]
+        [Authorize(Roles ="Admin")]
+        public async Task<IActionResult> GetAllAddressUser()
+        {
+            var result = await _service.getAllAddressUsers();
+            if( result == null)
+                return BadRequest(result);
+            return Ok(result);
+        }
+
+        [HttpDelete("admin-delete/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteAddressByIdAdmin(int id)
+        {
+            var result = await _service.deleteByIdAdmin(id);
+            if ( result == null)
+                return BadRequest(result);
+            return Ok(result);
+        }
+
     }
 }
