@@ -7,13 +7,18 @@ on:
   workflow_dispatch:
 
 jobs:
+  # =========================
+  # CI: Build + Test
+  # =========================
   ci:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # ===== FRONTEND =====
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -27,6 +32,7 @@ jobs:
         working-directory: Frontend
         run: npm run build
 
+      # ===== BACKEND =====
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -41,6 +47,9 @@ jobs:
       - name: Test Backend
         run: dotnet test Backend/CafeShopAPI/CafeShopAPI.csproj --no-build --verbosity normal
 
+  # =========================
+  # CD: Deploy
+  # =========================
   cd:
     runs-on: ubuntu-latest
     needs: ci
@@ -49,12 +58,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy Frontend
+      # ===== FRONTEND DEPLOY (VERCEL) =====
+      - name: Deploy Frontend to Vercel
         working-directory: Frontend
-        run: npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Deploy Backend
+      # ===== BACKEND DEPLOY (RENDER) =====
+      - name: Deploy Backend to Render
         run: |
-          curl -X POST https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys \
+          curl -X POST "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys" \
           -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
           -H "Content-Type: application/json"
