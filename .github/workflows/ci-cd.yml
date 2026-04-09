@@ -60,11 +60,10 @@ jobs:
       # ===== FRONTEND (VERCEL) =====
       - name: Deploy Frontend
         working-directory: Frontend
-        run: |
-          npx vercel --prod --yes \
-          --token=${{ secrets.VERCEL_TOKEN }} \
-          --scope=${{ secrets.VERCEL_ORG_ID }} \
-          --project=${{ secrets.VERCEL_PROJECT_ID }}
+        run: npx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       # ===== BACKEND (RENDER) =====
       - name: Trigger Render Deploy
