@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CafeShopAPI.Enums;
+using System;
 using System.Collections.Generic;
 
 namespace CafeShopAPI.Models;
@@ -13,7 +14,7 @@ public partial class User
 
     public string? Password { get; set; }
 
-    public string? Role { get; set; }
+    public UserRole? Role { get; set; }
 
     public virtual ICollection<Address> Addresses { get; set; } = new List<Address>();
 
