@@ -1,0 +1,57 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+/* layout */
+.layout {
+  display: flex;
+}
+
+/* sidebar */
+.sidebar {
+  width: 220px;
+  background: #020617;
+  height: 100vh;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  margin-bottom: 20px;
+}
+
+.sidebar a {
+  display: block;
+  padding: 10px;
+  margin-bottom: 10px;
+  color: #94a3b8;
+  text-decoration: none;
+  border-radius: 8px;
+}
+
+.sidebar a:hover {
+  background: #1e293b;
+  color: white;
+}
+
+/* topbar */
+.topbar {
+  background: #020617;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* content */
+.content {
+  flex: 1;
+}
+
+.card {
+  background-image: url('./image/nen.PNG');
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
