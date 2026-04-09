@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 namespace CafeShopAPI.Models;
-
+using CafeShopAPI.DTOs;
 public partial class ProductImage
 {
     public int Id { get; set; }

@@ -2,6 +2,8 @@ using CafeShopAPI.Services;
 using Microsoft.EntityFrameworkCore;
 using CafeShopAPI.Data;
 
+using CafeShopAPI;
+// using CafeShopAPI.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // =======================
@@ -10,6 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Controllers
 builder.Services.AddControllers();
+//
+builder.Services.AddInfrastructure();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -41,6 +45,10 @@ builder.Services.AddScoped<ProductImageService>();
 var app = builder.Build();
 
 // Swagger
+
+// Enable CORS
+app.UseCors("AllowAll");
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
