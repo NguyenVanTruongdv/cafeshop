@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore; 
-using CafeShopAPI.DTO;
+using Microsoft.EntityFrameworkCore;
+using CafeShopAPI.DTOs;
 using CafeShopAPI.Models;
 using CafeShopAPI.Data;
 
@@ -8,41 +8,47 @@ namespace CafeShopAPI.Services
     public class CategoryService
     {
         private readonly AppDbContext db;
-        public CategoryService (AppDbContext _db)
+        public CategoryService(AppDbContext _db)
         {
-            db=_db;
+            db = _db;
         }
 
-        public async Task<List<CategoryDTO>> GetAll()
+        public async Task<List<CategoryDTO>> GetAll(string name)
         {
-            return await db.Categories.Select(c => new CategoryDTO
+            var Query = db.Categories.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(name))
             {
-                Id=c.Id,
-                Name=c.Name,
-                Description=c.Description
+                Query = Query.Where(c=>c.Name.Contains(name));
+            }
+            return await Query.Select(c => new CategoryDTO
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Description = c.Description
 
             }).ToListAsync();
         }
         public async Task<CategoryDTO> GetByID(int id)
         {
-           return await db.Categories.Where(c => c.Id == id).Select(c => new CategoryDTO
+            return await db.Categories.Where(c => c.Id == id).Select(c => new CategoryDTO
             {
-                Id=c.Id,
-                Name=c.Name,
+                Id = c.Id,
+                Name = c.Name,
                 Description = c.Description ?? "",
             }).FirstOrDefaultAsync();
-       
+
         }
         public async Task<bool> Create(CreateCategoryDTO dto)
         {
-            var exits = await  db.Categories.AnyAsync(x=>x.Name.ToLower()==dto.Name.ToLower());
-            if(exits)
+            var exits = await db.Categories.AnyAsync(x => x.Name.ToLower() == dto.Name.ToLower());
+            if (exits)
                 return false;
-            
-            var category= new Category
+
+            var category = new Category
             {
-                Name=dto.Name,
-                Description=dto.Description
+                Name = dto.Name,
+                Description = dto.Description
             };
             db.Categories.Add(category);
             await db.SaveChangesAsync();
@@ -51,23 +57,23 @@ namespace CafeShopAPI.Services
         }
         public async Task<bool> Update(int id, CreateCategoryDTO dto)
         {
-            var category= await db.Categories.FindAsync(id);
+            var category = await db.Categories.FindAsync(id);
             if (category == null)
                 return false;
-            
-            category.Name=dto.Name;
-            category.Description=dto.Description;
-            
+
+            category.Name = dto.Name;
+            category.Description = dto.Description;
+
             await db.SaveChangesAsync();
             return true;
-            
+
         }
-        public async  Task<bool> Delete(int id)
+        public async Task<bool> Delete(int id)
         {
             var category = await db.Categories.FindAsync(id);
-            if(category==null)
+            if (category == null)
                 return false;
-            
+
             db.Categories.Remove(category);
             await db.SaveChangesAsync();
             return true;

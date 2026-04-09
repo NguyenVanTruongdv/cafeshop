@@ -2,7 +2,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CafeShopAPI", "CafeShopAPI.csproj", "{21BE89F3-9A28-DC35-6D03-1BDE6CF98CC2}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CafeShopAPI", "CafeShopAPI.csproj", "{276CC8D6-0408-4AFD-900A-F54C256DEDDB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,11 +18,15 @@ Global
 		{21BE89F3-9A28-DC35-6D03-1BDE6CF98CC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21BE89F3-9A28-DC35-6D03-1BDE6CF98CC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21BE89F3-9A28-DC35-6D03-1BDE6CF98CC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{276CC8D6-0408-4AFD-900A-F54C256DEDDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{276CC8D6-0408-4AFD-900A-F54C256DEDDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{276CC8D6-0408-4AFD-900A-F54C256DEDDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{276CC8D6-0408-4AFD-900A-F54C256DEDDB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {56AD6275-169D-4FB4-A59B-7ABC22532BD1}
+		SolutionGuid = {37F05F6B-CBA7-4489-A968-D6E6CA852D4C}
 	EndGlobalSection
 EndGlobal

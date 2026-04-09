@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using CafeShopAPI.Data;
 using CafeShopAPI.Models;
+using CafeShopAPI.DTO.Product;
+using CafeShopAPI.DTOs;
 public class ProductImageService
 {
     private readonly AppDbContext db;
@@ -19,7 +21,9 @@ public class ProductImageService
             .Select(x => new ProductImgDTO
             {
                 Id = x.Id,
+
                 ImageUrl = x.ImageUrl ?? "",
+    
                 IsMain = x.IsMain ?? false
             })
             .ToListAsync();
@@ -105,7 +109,17 @@ public class ProductImageService
         var image = await db.ProductImages.FindAsync(imageId);
         if (image == null)
             return false;
+        // nếu ảnh bị xóa là ảnh chính thì set ảnh đầu tiên thì lấy ảnh đầu tiên tiếp theo set là ảnh chính
+        if (image.IsMain == true)
+        {
+            var another = await db.ProductImages
+                .FirstOrDefaultAsync(x => x.ProductId == image.ProductId && x.Id != imageId);
 
+            if (another != null)
+            {
+                another.IsMain = true;
+            }
+        }
         // xoá file vật lý
         var fullPath = Path.Combine("wwwroot", image.ImageUrl!.TrimStart('/'));
         if (File.Exists(fullPath))
@@ -119,6 +133,50 @@ public class ProductImageService
         return true;
     }
 
+    public async Task<ProductImgDTO?> UpdateImage(int imageId, IFormFile file)
+{
+    var image = await db.ProductImages.FindAsync(imageId);
+    if (image == null)
+        return null; 
+
+    // ❌ validate file
+    if (file == null || !file.ContentType.StartsWith("image/"))
+        throw new Exception("Invalid file");
+
+    // 🗑️ xoá file cũ
+    var oldPath = Path.Combine("wwwroot", image.ImageUrl!.TrimStart('/'));
+    if (File.Exists(oldPath))
+    {
+        File.Delete(oldPath);
+    }
+
+    // 📁 tạo file mới
+    var folder = Path.Combine("wwwroot/images");
+    if (!Directory.Exists(folder))
+    {
+        Directory.CreateDirectory(folder);
+    }
+
+    var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+    var newPath = Path.Combine(folder, fileName);
+
+    using (var stream = new FileStream(newPath, FileMode.Create))
+    {
+        await file.CopyToAsync(stream);
+    }
+
+    // 🔥 update DB
+    image.ImageUrl = "/images/" + fileName;
+
+    await db.SaveChangesAsync();
+
+    return new ProductImgDTO
+    {
+        Id = image.Id,
+        ImageUrl = image.ImageUrl!,
+        IsMain = image.IsMain ?? false
+    };
+}
     // 🔹 4. Set ảnh chính
     public async Task<bool> SetMainImage(int productId, int imageId)
     {
@@ -132,6 +190,7 @@ public class ProductImageService
         foreach (var img in images)
         {
             img.IsMain = (img.Id == imageId);
+            //is main sẽ được gán là true khi mà id ảnh trùng với id ảnh được gửi lên từ fe
         }
 
         await db.SaveChangesAsync();
