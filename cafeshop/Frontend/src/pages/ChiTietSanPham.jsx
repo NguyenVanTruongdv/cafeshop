@@ -1,33 +1,54 @@
-import React, { useState } from 'react';
-// 1. Lấy công cụ bắt ID trên đường link
+import React, { useState, useContext } from 'react'; 
 import { useParams } from 'react-router-dom'; 
-// 2. Lấy kho dữ liệu của bạn vào
 import { coffeeProducts } from '../services/mockData'; 
+import { CartContext } from '../context/CartContext'; 
 
 const ChiTietSanPham = () => {
-  // 3. Bắt cái ID từ trên thanh địa chỉ (ví dụ: /san-pham/1 -> lấy số 1)
   const { id } = useParams();
-
-  // 4. Vào kho dữ liệu, tìm cái sản phẩm có id trùng khớp
   const product = coffeeProducts.find((p) => p.id === parseInt(id));
+
+  const { addToCart } = useContext(CartContext);
 
   const [quantity, setQuantity] = useState(1);
   const handleIncrease = () => setQuantity(prev => prev + 1);
   const handleDecrease = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
-  // 5. Nếu khách gõ bậy bạ ID không có thật thì báo lỗi
+  const [selectedWeight, setSelectedWeight] = useState('500g');
+  const weights = ['250g', '500g', '1kg'];
+
+  const [toast, setToast] = useState({ show: false, message: '' });
+
   if (!product) {
     return <h2 style={{textAlign: 'center', marginTop: '50px'}}>Sản phẩm không tồn tại!</h2>;
   }
+
+  const displayPrice = 
+    selectedWeight === '250g' ? product.price * 0.55 : 
+    selectedWeight === '1kg' ? product.price * 1.9 : 
+    product.price; 
+
+  const handleAddToCart = () => {
+    if (addToCart) {
+      addToCart({ ...product, quantity, weight: selectedWeight });
+    }
+
+    setToast({
+      show: true,
+      message: `Đã thêm vào giỏ hàng!`
+    });
+
+    setTimeout(() => {
+      setToast({ show: false, message: '' });
+    }, 3000);
+  };
 
   return (
     <div style={styles.container}>
       
       <div style={styles.topSection}>
-        {/* Cột Trái: Đổi hình ảnh "chết" thành hình ảnh "động" */}
         <div style={styles.imageCol}>
           <img 
-            src={product.image}  // <-- Dữ liệu động
+            src={product.image}  
             alt={product.name} 
             style={styles.mainImage}
             onError={(e) => { e.target.src = 'https://placehold.co/500x500/8B0000/FFF?text=Hinh+Anh+Loi'; }}
@@ -38,13 +59,12 @@ const ChiTietSanPham = () => {
           </div>
         </div>
 
-        {/* Cột Phải: Đổi Tên và Giá thành dữ liệu "động" */}
         <div style={styles.infoCol}>
-          <h1 style={styles.productName}>{product.name}</h1> {/* <-- Tên tự đổi */}
+          <h1 style={styles.productName}>{product.name}</h1> 
           
           <div style={styles.redLine}></div>
 
-          <p style={styles.productPrice}>{product.price.toLocaleString('vi-VN')}₫</p> {/* <-- Giá tự đổi */}
+          <p style={styles.productPrice}>{displayPrice.toLocaleString('vi-VN')}₫</p>
           
           <p style={styles.shortDesc}>
             Dòng sản phẩm chất lượng cao của Chất Coffee. Phân loại: <strong>{product.type}</strong>. 
@@ -53,7 +73,24 @@ const ChiTietSanPham = () => {
 
           <div style={styles.metaInfo}>
             <p><strong>Tình trạng:</strong> <span style={{color: 'green'}}>Còn hàng</span></p>
-            <p><strong>Quy cách:</strong> Gói 500g</p>
+          </div>
+
+          <div style={styles.weightSection}>
+            <span style={styles.weightLabel}>Chọn trọng lượng:</span>
+            <div style={styles.weightOptions}>
+              {weights.map((weight) => (
+                <button
+                  key={weight}
+                  style={{
+                    ...styles.weightBtn,
+                    ...(selectedWeight === weight ? styles.activeWeightBtn : {})
+                  }}
+                  onClick={() => setSelectedWeight(weight)}
+                >
+                  {weight}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div style={styles.quantitySection}>
@@ -66,15 +103,21 @@ const ChiTietSanPham = () => {
           </div>
 
           <div style={styles.actionButtons}>
-            <button style={styles.addToCartBtn}>🛒 THÊM VÀO GIỎ HÀNG</button>
+            <button 
+              style={styles.addToCartBtn}
+              onClick={handleAddToCart} 
+            >
+              🛒 THÊM VÀO GIỎ HÀNG
+            </button>
             <button style={styles.buyNowBtn}>MUA NGAY</button>
           </div>
         </div>
       </div>
-     <div style={styles.bottomSection}>
+
+      <div style={styles.bottomSection}>
         <h2 style={styles.descTitle}>MÔ TẢ SẢN PHẨM</h2>
         <div style={styles.descContent}>
-          <p><strong>CCà phê nguyên chất Hạt CULI (đặc biệt)</strong> là sự lựa chọn tối ưu cho các tín đồ yêu thích gu cà phê pha máy đậm đà chuẩn vị Ý nhưng vẫn mang đậm bản sắc cà phê Việt.</p>
+          <p><strong>Cà phê nguyên chất Hạt CULI (đặc biệt)</strong> là sự lựa chọn tối ưu cho các tín đồ yêu thích gu cà phê pha máy đậm đà chuẩn vị Ý nhưng vẫn mang đậm bản sắc cà phê Việt.</p>
           
           <h3>Thành phần & Kỹ thuật rang</h3>
           <ul>
@@ -93,22 +136,29 @@ const ChiTietSanPham = () => {
         </div>
       </div>
 
+      {toast.show && (
+        <div style={styles.toastContainer}>
+          <div style={styles.toastIcon}>✔</div>
+          <div style={styles.toastContent}>
+            <div style={styles.toastTitle}>Thành công</div>
+            <div style={styles.toastMessage}>{toast.message}</div>
+          </div>
+        </div>
+      )}
+
     </div>
-    
-    
   );
 };
 
-// --- CSS INLINE ---
 const styles = {
   container: {
     maxWidth: '1200px',
     margin: '0 auto',
     padding: '40px 20px',
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
+    position: 'relative' 
   },
   
-  // KHU VỰC 1
   topSection: {
     display: 'flex',
     flexWrap: 'wrap',
@@ -116,10 +166,7 @@ const styles = {
     marginBottom: '60px'
   },
   
-  // Cột Trái (Ảnh)
-  imageCol: {
-    flex: '1 1 450px',
-  },
+  imageCol: { flex: '1 1 450px' },
   mainImage: {
     width: '100%',
     height: 'auto',
@@ -127,10 +174,7 @@ const styles = {
     border: '1px solid #eee',
     marginBottom: '15px'
   },
-  thumbnailList: {
-    display: 'flex',
-    gap: '10px'
-  },
+  thumbnailList: { display: 'flex', gap: '10px' },
   thumbnail: {
     width: '80px',
     height: '80px',
@@ -140,7 +184,6 @@ const styles = {
     cursor: 'pointer'
   },
 
-  // Cột Phải (Thông tin)
   infoCol: {
     flex: '1 1 500px',
     display: 'flex',
@@ -161,7 +204,7 @@ const styles = {
   productPrice: {
     fontSize: '32px',
     fontWeight: 'bold',
-    color: '#8B0000', // Đỏ đô
+    color: '#8B0000',
     margin: '0 0 20px 0'
   },
   shortDesc: {
@@ -173,11 +216,44 @@ const styles = {
   metaInfo: {
     fontSize: '15px',
     color: '#333',
-    marginBottom: '30px',
+    marginBottom: '20px',
     lineHeight: '1.8'
   },
+
+  weightSection: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: '25px'
+  },
+  weightLabel: {
+    fontSize: '16px',
+    fontWeight: 'bold',
+    marginRight: '20px',
+    minWidth: '130px'
+  },
+  weightOptions: {
+    display: 'flex',
+    gap: '12px',
+  },
+  weightBtn: {
+    padding: '8px 20px',
+    fontSize: '14px',
+    color: '#333',
+    backgroundColor: '#fff',
+    border: '1px solid #ddd',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    outline: 'none',
+  },
+  activeWeightBtn: {
+    backgroundColor: '#8B0000',
+    color: '#fff',
+    borderColor: '#8B0000',
+    fontWeight: 'bold',
+    boxShadow: '0 2px 5px rgba(139,0,0,0.2)'
+  },
   
-  // Chọn số lượng
   quantitySection: {
     display: 'flex',
     alignItems: 'center',
@@ -186,7 +262,8 @@ const styles = {
   quantityLabel: {
     fontSize: '16px',
     fontWeight: 'bold',
-    marginRight: '20px'
+    marginRight: '20px',
+    minWidth: '130px'
   },
   quantityBox: {
     display: 'flex',
@@ -245,7 +322,6 @@ const styles = {
     cursor: 'pointer'
   },
 
-  // KHU VỰC 2 (Mô tả)
   bottomSection: {
     borderTop: '1px solid #eee',
     paddingTop: '40px'
@@ -260,6 +336,47 @@ const styles = {
     fontSize: '16px',
     color: '#444',
     lineHeight: '1.8'
+  },
+
+  toastContainer: {
+    position: 'fixed',
+    bottom: '30px',
+    right: '30px',
+    backgroundColor: '#fff',
+    borderLeft: '5px solid #8B0000',
+    boxShadow: '0 5px 15px rgba(0,0,0,0.15)',
+    padding: '15px 25px',
+    borderRadius: '4px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '15px',
+    zIndex: 9999,
+    animation: 'slideInRight 0.4s ease-out'
+  },
+  toastIcon: {
+    width: '30px',
+    height: '30px',
+    backgroundColor: '#8B0000',
+    color: '#fff',
+    borderRadius: '50%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: '14px'
+  },
+  toastContent: {
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  toastTitle: {
+    fontWeight: 'bold',
+    color: '#333',
+    fontSize: '15px'
+  },
+  toastMessage: {
+    color: '#666',
+    fontSize: '13px',
+    marginTop: '2px'
   }
 };
 

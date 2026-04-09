@@ -1,4 +1,4 @@
-// File: src/pages/ThanhToan.jsx
+
 import React, { useContext } from 'react';
 import { CartContext } from '../context/CartContext';
 
@@ -121,9 +121,6 @@ const ThanhToan = () => {
               </div>
             </div>
 
-            <p style={styles.policyText}>
-              Dữ liệu cá nhân của bạn sẽ được sử dụng để xử lý đơn hàng và hỗ trợ trải nghiệm trên toàn bộ trang web.
-            </p>
 
             <button type="submit" style={styles.submitBtn}>
               XÁC NHẬN ĐẶT HÀNG

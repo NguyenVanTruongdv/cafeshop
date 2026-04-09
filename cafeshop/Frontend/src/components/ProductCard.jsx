@@ -1,9 +1,22 @@
+// File: src/components/ProductCard.jsx
 import React, { useContext } from 'react'; 
 import { Link } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 
-const ProductCard = ({ product }) => {
+// Thêm prop onAddToCart vào đây
+const ProductCard = ({ product, onAddToCart }) => {
   const { addToCart } = useContext(CartContext);
+
+  // Hàm xử lý khi nhấn nút
+  const handleAddClick = () => {
+    // 1. Vẫn thực hiện logic thêm vào giỏ hàng của Context (nếu có)
+    addToCart(product); 
+    
+    // 2. Gọi hàm báo hiệu cho trang cha để hiện Toast đẹp mắt
+    if (onAddToCart) {
+      onAddToCart(product.name);
+    }
+  };
 
   return (
     <div style={styles.card}>
@@ -12,7 +25,9 @@ const ProductCard = ({ product }) => {
           src={product.image} 
           alt={product.name} 
           style={styles.image}
-          onError={(e) => { e.target.src = 'https://placehold.co/300x300/8B0000/FFF?text=Hinh+Anh+Loi'; }}
+          onError={(e) => { 
+            e.target.src = 'https://placehold.co/300x300/8B0000/FFF?text=Hinh+Anh+Loi'; 
+          }}
         />
       </Link>
 
@@ -23,13 +38,16 @@ const ProductCard = ({ product }) => {
         <p style={styles.type}>Phân loại: {product.type}</p>
         <p style={styles.price}>{product.price.toLocaleString('vi-VN')} đ</p>
         
-        <button onClick={() => addToCart(product)} style={styles.button}>Thêm vào giỏ</button>
+        {/* Đổi onClick để gọi hàm xử lý mới */}
+        <button onClick={handleAddClick} style={styles.button}>
+          Thêm vào giỏ
+        </button>
       </div>
     </div>
   );
 };
 
-
+// --- CSS GIỮ NGUYÊN (HOẶC CHỈNH LẠI CHO ĐẸP HƠN) ---
 const styles = {
   card: { 
     border: '1px solid #ddd', 
@@ -38,28 +56,35 @@ const styles = {
     backgroundColor: '#fff', 
     textAlign: 'center', 
     boxShadow: '0 4px 6px rgba(0,0,0,0.05)', 
-    transition: 'transform 0.2s' },
+    transition: 'transform 0.2s' 
+  },
   image: { 
     width: '100%', 
     height: '250px', 
     objectFit: 'cover', 
-    display: 'block' },
+    display: 'block' 
+  },
   info: { 
-    padding: '15px' },
+    padding: '15px' 
+  },
   name: { 
     fontSize: '15px', 
     color: '#4B2C20', 
     margin: '0 0 10px 0', 
-    minHeight: '45px' },
+    minHeight: '45px',
+    fontWeight: 'bold'
+  },
   type: { 
     fontSize: '13px', 
     color: '#666', 
-    marginBottom: '10px' },
+    marginBottom: '10px' 
+  },
   price: { 
     fontSize: '18px', 
     fontWeight: 'bold', 
     color: '#8B0000', 
-    marginBottom: '15px' },
+    marginBottom: '15px' 
+  },
   button: { 
     backgroundColor: '#8B0000', 
     color: 'white', 
@@ -68,7 +93,9 @@ const styles = {
     borderRadius: '4px', 
     cursor: 'pointer', 
     width: '100%', 
-    fontWeight: 'bold' }
+    fontWeight: 'bold',
+    transition: 'background-color 0.2s'
+  }
 };
 
 export default ProductCard;

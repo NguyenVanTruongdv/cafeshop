@@ -1,4 +1,4 @@
-// File: src/context/CartContext.jsx
+
 import React, { createContext, useState } from 'react';
 
 export const CartContext = createContext();
@@ -14,7 +14,6 @@ export const CartProvider = ({ children }) => {
       }
       return [...prev, { ...product, qty: 1 }];
     });
-    alert(`Đã thêm ${product.name} vào giỏ!`);
   };
   const cartCount = cartItems.reduce((total, item) => total + item.qty, 0);
   const cartTotal = cartItems.reduce((total, item) => total + (item.price * item.qty), 0);

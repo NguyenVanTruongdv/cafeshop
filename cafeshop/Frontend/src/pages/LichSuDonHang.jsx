@@ -194,7 +194,6 @@ const LichSuDonHang = () => {
         </ul>
       </div>
 
-      {/* CONTENT PHẢI */}
       <div style={styles.mainContent}>
         {activeMenu === 'orders' ? <OrdersView /> : <ProfileView />}
       </div>
@@ -202,7 +201,6 @@ const LichSuDonHang = () => {
   );
 };
 
-// --- CSS INLINE DỌC ---
 const styles = {
   container: {
     maxWidth: '1200px',
@@ -279,7 +277,6 @@ const styles = {
     gap: '20px'
   },
 
-  // View Container cho Profile
   viewContainer: {
     backgroundColor: '#fff',
     padding: '30px',
