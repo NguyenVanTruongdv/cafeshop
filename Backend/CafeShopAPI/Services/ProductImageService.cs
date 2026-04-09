@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using CafeShopAPI.Data;
 using CafeShopAPI.Models;
+using CafeShopAPI.DTO.Product;
+using CafeShopAPI.DTOs;
 public class ProductImageService
 {
     private readonly AppDbContext db;

@@ -1,11 +1,14 @@
 using CafeShopAPI.Services;
 using Microsoft.EntityFrameworkCore;
 using CafeShopAPI.Data;
+using CafeShopAPI;
 // using CafeShopAPI.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Controllers
 builder.Services.AddControllers();
+//
+builder.Services.AddInfrastructure();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -32,6 +35,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<CategoryService>();
 
 var app = builder.Build();
+
 
 // Enable CORS
 app.UseCors("AllowAll");
