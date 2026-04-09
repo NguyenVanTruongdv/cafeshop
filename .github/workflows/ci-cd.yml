@@ -1,69 +1,84 @@
-name: CI/CD Full
+name: CI/CD Full Stack
 
 on:
-push:
-branches:
-- main
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-ci:
-runs-on: ubuntu-latest
+  # ===== JOB 1: BUILD & TEST BACKEND =====
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-steps:
-  - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+          # Tự động cache các gói NuGet
+          cache: true
 
-  # ===== BACKEND (.NET) =====
-  - name: Setup .NET
-    uses: actions/setup-dotnet@v3
-    with:
-      dotnet-version: '8.0.x'
+      - name: Restore dependencies
+        run: dotnet restore
 
-  - name: Restore BE
-    run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
 
-  - name: Build BE
-    run: dotnet build --no-restore
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
 
-  - name: Test BE
-    run: dotnet test --no-build
+  # ===== JOB 2: BUILD & TEST FRONTEND =====
+  build-frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
 
-  # ===== FRONTEND (React) =====
-  - name: Setup Node
-    uses: actions/setup-node@v3
-    with:
-      node-version: '18'
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          # Tự động cache npm
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
-  - name: Install FE
-    run: |
-      cd frontend
-      npm install
+      - name: Install dependencies
+        run: npm ci # Sử dụng ci thay cho install để đảm bảo tính nhất quán trên môi trường CI
 
-  - name: Build FE
-    run: |
-      cd frontend
-      npm run build
+      - name: Build
+        run: npm run build
 
-deploy-backend:
-needs: ci
-runs-on: ubuntu-latest
+  # ===== JOB 3: DEPLOY BACKEND =====
+  deploy-backend:
+    needs: build-backend
+    if: github.event_name == 'push' # Chỉ deploy khi push vào main, không deploy khi làm PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy
+        run: |
+          curl -f -X POST https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys \
+          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+          # Thêm flag -f để curl báo lỗi nếu API trả về mã 4xx hoặc 5xx
 
-steps:
-  - name: Deploy to Render
-    run: |
-      curl -X POST https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys \
-      -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
-
-deploy-frontend:
-needs: ci
-runs-on: ubuntu-latest
-
-steps:
-  - uses: actions/checkout@v3
-
-  - name: Install Vercel CLI
-    run: npm install -g vercel
-
-  - name: Deploy to Vercel
-    run: |
-      cd frontend
-      vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+  # ===== JOB 4: DEPLOY FRONTEND =====
+  deploy-frontend:
+    needs: build-frontend
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25 # Sử dụng Action chính chủ/phổ biến thay vì cài CLI thủ công
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }} # Cần thêm cái này trong secret
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }} # Cần thêm cái này trong secret
+          vercel-args: '--prod'
+          working-directory: ./frontend
