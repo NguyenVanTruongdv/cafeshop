@@ -10,14 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ========================
+      # 📦 CHECKOUT CODE
+      # ========================
       - name: Checkout code
         uses: actions/checkout@v4
 
-    
+      # ========================
+      # 🟢 FRONTEND (VITE)
+      # ========================
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: npm
           cache-dependency-path: Frontend/package-lock.json
 
@@ -29,7 +34,9 @@ jobs:
         working-directory: Frontend
         run: npm run build
 
-      
+      # ========================
+      # 🔵 BACKEND (.NET)
+      # ========================
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
