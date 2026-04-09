@@ -1,0 +1,74 @@
+name: CI/CD Full
+
+on:
+push:
+branches: [ "main" ]
+
+jobs:
+ci:
+runs-on: ubuntu-latest
+
+```
+steps:
+- uses: actions/checkout@v3
+
+# ===== BACKEND =====
+- name: Setup .NET
+  uses: actions/setup-dotnet@v3
+  with:
+    dotnet-version: '8.0.x'
+
+- name: Restore BE
+  run: dotnet restore
+
+- name: Build BE
+  run: dotnet build --no-restore
+
+- name: Test BE
+  run: dotnet test --no-build
+
+# ===== FRONTEND =====
+- name: Setup Node
+  uses: actions/setup-node@v3
+  with:
+    node-version: '18'
+
+- name: Install FE
+  run: |
+    cd frontend
+    npm install
+
+- name: Build FE
+  run: |
+    cd frontend
+    npm run build
+```
+
+deploy-backend:
+needs: ci
+runs-on: ubuntu-latest
+
+```
+steps:
+- name: Deploy Render
+  run: |
+    curl -X POST https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys \
+    -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+```
+
+deploy-frontend:
+needs: ci
+runs-on: ubuntu-latest
+
+```
+steps:
+- uses: actions/checkout@v3
+
+- name: Install Vercel CLI
+  run: npm install -g vercel
+
+- name: Deploy FE
+  run: |
+    cd frontend
+    vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+```
