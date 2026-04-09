@@ -29,7 +29,7 @@ namespace CafeShopAPI.Services
             return int.Parse(userId.ToString());
         }
 
-        public async Task<ApiResponse<List<UserResponse>>> getAll()
+        public async Task<ApiDtoResponse<List<UserResponse>>> getAll()
         {
             var data = await _context.Users.Select(u => new UserResponse
             {
@@ -37,41 +37,41 @@ namespace CafeShopAPI.Services
                 Name = u.Name,
                 Email = u.Email
             }).ToListAsync();
-            return new ApiResponse<List<UserResponse>>
+            return new ApiDtoResponse<List<UserResponse>>
             {
                 Message = "Lấy danh sách users thành công",
                 Data  = data
             };
         }
 
-        public async Task<ApiResponse<UserResponse?>> findById(int id)
+        public async Task<ApiDtoResponse<UserResponse?>> findById(int id)
         {
             var user = await _context.Users.SingleOrDefaultAsync(u => u.Id == id);
             if (user == null)
-                return new ApiResponse<UserResponse?>
+                return new ApiDtoResponse<UserResponse?>
                 {
                     Message = "Không tìm thấy id",
                     Data = null
                 };
-            return new ApiResponse<UserResponse?>
+            return new ApiDtoResponse<UserResponse?>
             {
                 Message = "Lấy thông tin thành công",
                 Data = _mapper.Map<UserResponse>(user)
             };
         }
 
-        public async Task<ApiResponse<UserResponse?>> updateUser(UserCreate user)
+        public async Task<ApiDtoResponse<UserResponse?>> updateUser(UserCreate user)
         {
             var idAuth = getAuthID();
             if ( idAuth == null)
-                return new ApiResponse<UserResponse?>
+                return new ApiDtoResponse<UserResponse?>
                 {
                     Message = "Người dùng chưa đăng nhập",
                     Data = null
                 };
             var userOld = await _context.Users.SingleOrDefaultAsync(u => u.Id == idAuth);
             if (userOld == null)
-                return new ApiResponse<UserResponse?>
+                return new ApiDtoResponse<UserResponse?>
                 {
                     Message = "Thông tin không khớp",
                     Data = null
@@ -82,13 +82,13 @@ namespace CafeShopAPI.Services
                 userOld.Email = user.Email;
                 _context.Users.Update(userOld);
                 await _context.SaveChangesAsync();
-                return new ApiResponse<UserResponse?>
+                return new ApiDtoResponse<UserResponse?>
                 {
                     Message = "Cập nhật thông tin thành công",
                     Data = _mapper.Map<UserResponse>(userOld)
                 };
             }
-            return new ApiResponse<UserResponse?>
+            return new ApiDtoResponse<UserResponse?>
             {
                 Message = "Cập nhật thất bại",
                 Data = null

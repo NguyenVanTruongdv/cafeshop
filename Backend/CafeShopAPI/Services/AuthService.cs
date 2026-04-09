@@ -36,17 +36,17 @@ namespace CafeShopAPI.Services
             return int.Parse(userId.ToString());
         }
 
-        public async Task<ApiResponse<object>> Register(RegisterRequest re)
+        public async Task<ApiDtoResponse<object>> Register(RegisterRequest re)
         {
             var userEmail = new MailAddress(re.Email);
             if (userEmail.Address != re.Email)
-                return new ApiResponse<object>
+                return new ApiDtoResponse<object>
                 {
                     Message ="Email không hợp lệ",
                     Data = null
                 };
             if (_context.Users.Any(x => x.Email == re.Email))
-                return new ApiResponse<object>
+                return new ApiDtoResponse<object>
                 {
                     Message = "Email đã tồn tại",
                     Data = null
@@ -63,7 +63,7 @@ namespace CafeShopAPI.Services
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return new ApiResponse<object> { 
+            return new ApiDtoResponse<object> { 
                 Message = "Đăng ký tài khoản thành công",
                 Data= new
                 {
@@ -75,24 +75,24 @@ namespace CafeShopAPI.Services
         }
 
 
-        public async Task<ApiResponse<object>> Login(LoginRequest log)
+        public async Task<ApiDtoResponse<object>> Login(LoginRequest log)
         {
             var user = _context.Users.FirstOrDefault(x => x.Email.Trim() == log.Email.Trim());
             if (user == null)
-                return new ApiResponse<object>
+                return new ApiDtoResponse<object>
                 {
                     Message = "Sai email hoặc mật khẩu không đúng",
                     Data  = null
                 };
             bool check = BCrypt.Net.BCrypt.Verify(log.Password, user.Password);
-            if (!check) return new ApiResponse<object>
+            if (!check) return new ApiDtoResponse<object>
             {
                 Message = "Sai email hoặc mật khẩu không đúng",
                 Data  = null
             };
 
             var token = _jwtService.GenerateJwtToken(user);
-            return new ApiResponse<object>
+            return new ApiDtoResponse<object>
             {
                 Message = "Đăng nhập thành công",
                 Data  = new
@@ -109,11 +109,11 @@ namespace CafeShopAPI.Services
             };
         }
 
-        public async Task<ApiResponse<object>> resetPassword(ResetPasswordRequest re)
+        public async Task<ApiDtoResponse<object>> resetPassword(ResetPasswordRequest re)
         {
             var IdAuth = getAuthID();
             if (IdAuth == null)
-                return new ApiResponse<object>
+                return new ApiDtoResponse<object>
                 {
                     Message = "Chưa xác thực người dùng",
                     Data = null
@@ -121,7 +121,7 @@ namespace CafeShopAPI.Services
             var user = _context.Users.FirstOrDefault(x => x.Id == IdAuth);
             bool check = BCrypt.Net.BCrypt.Verify(re.OldPass, user.Password);
             if (!check)
-                return new ApiResponse<object>
+                return new ApiDtoResponse<object>
                 {
                     Message = "Mật khẩu cũ không chính xác",
                     Data   = null
@@ -131,7 +131,7 @@ namespace CafeShopAPI.Services
                 user.Password = BCrypt.Net.BCrypt.HashPassword(re.NewPass);
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
-                return new ApiResponse<object> {
+                return new ApiDtoResponse<object> {
                     Message = "Cập nhật mật khẩu mới thành công",
                     Data = new ResetPasswordResponse
                     {
