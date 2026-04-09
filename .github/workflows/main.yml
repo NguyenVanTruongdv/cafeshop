@@ -1,0 +1,52 @@
+name: CI/CD Full
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ========================
+      # 📦 CHECKOUT CODE
+      # ========================
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ========================
+      # 🟢 FRONTEND (VITE)
+      # ========================
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Frontend
+        working-directory: Frontend
+        run: npm install
+
+      - name: Build Frontend
+        working-directory: Frontend
+        run: npm run build
+
+      # ========================
+      # 🔵 BACKEND (.NET)
+      # ========================
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore Backend
+        run: dotnet restore Backend/CafeShopAPI/CafeShopAPI.csproj
+
+      - name: Build Backend
+        run: dotnet build Backend/CafeShopAPI/CafeShopAPI.csproj --no-restore
+
+      - name: Test Backend
+        run: dotnet test Backend/CafeShopAPI/CafeShopAPI.csproj --no-build --verbosity normal
