@@ -59,7 +59,6 @@ jobs:
 
       # ===== FRONTEND (VERCEL) =====
       - name: Deploy Frontend
-        working-directory: Frontend
         run: npx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
