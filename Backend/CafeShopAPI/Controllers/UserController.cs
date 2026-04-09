@@ -14,14 +14,14 @@ namespace CafeShopAPI.Controllers
         {
             _service = service;
         }
-        [HttpGet]
+        [HttpGet("admin")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAll()
         {
             return Ok(await _service.getAll());
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("admin/{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetByID(int id)
         {
@@ -42,14 +42,13 @@ namespace CafeShopAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUserByAdmin(int id)
         {
             var result = await _service.deleteUser(id);
             if (result == false)
                 return BadRequest("Không có quyền xóa thông tin user");
             return Ok(result);
-
         }
     }
 }
