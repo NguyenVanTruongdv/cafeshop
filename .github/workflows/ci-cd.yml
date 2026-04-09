@@ -1,91 +1,48 @@
-name: CI/CD Production Pipeline
+name: CI/CD Full
 
 on:
   push:
     branches:
       - main
-    # Chỉ chạy pipeline khi có thay đổi ở các thư mục liên quan
-    paths:
-      - 'backend/**'
-      - 'frontend/**'
-      - '.github/workflows/**'
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  # ===== JOB 1: BACKEND (Tối ưu hóa cache và lọc folder) =====
-  build-backend:
+  build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend # Tránh việc phải cd backend nhiều lần
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-          cache: true # Tự động cache NuGet packages
-          cache-dependency-path: backend/*.csproj
-
-      - name: Restore & Build
-        run: |
-          dotnet restore
-          dotnet build --no-restore --configuration Release
-
-      - name: Test
-        run: dotnet test --no-build --configuration Release --verbosity normal
-
-  # ===== JOB 2: FRONTEND (Sử dụng npm ci và caching) =====
-  build-frontend:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/checkout@v4
-
+    
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          node-version: 18
+          cache: npm
+          cache-dependency-path: Frontend/package-lock.json
 
-      - name: Install dependencies
-        run: npm ci # Nhanh và ổn định hơn npm install cho CI
+      - name: Install Frontend
+        working-directory: Frontend
+        run: npm install
 
-      - name: Lint & Build
-        run: |
-          npm run build --if-present
+      - name: Build Frontend
+        working-directory: Frontend
+        run: npm run build
 
-  # ===== JOB 3: DEPLOY BACKEND (An toàn hơn) =====
-  deploy-backend:
-    needs: build-backend
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Render Deploy
-        run: |
-          curl -f -X POST https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys \
-          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
-          # Flag -f giúp Job thất bại nếu API Render trả về lỗi (4xx/5xx)
-
-  # ===== JOB 4: DEPLOY FRONTEND (Vercel Action) =====
-  deploy-frontend:
-    needs: build-frontend
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
       
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
-          working-directory: ./frontend
+          dotnet-version: 8.0.x
+
+      - name: Restore Backend
+        working-directory: Backend
+        run: dotnet restore
+
+      - name: Build Backend
+        working-directory: Backend
+        run: dotnet build --no-restore
+
+      - name: Test Backend
+        working-directory: Backend
+        run: dotnet test --no-build --verbosity normal
