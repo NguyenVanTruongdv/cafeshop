@@ -6,6 +6,7 @@ import { API_PRODUCTS_URL } from '../apiConfig';
 const ChiTietSanPham = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,7 +23,22 @@ const ChiTietSanPham = () => {
           throw new Error('Sản phẩm không tồn tại');
         }
         const data = await res.json();
-        setProduct(data);
+        
+        // SỬA Ở ĐÂY: Lấy đúng mảng variants (hỗ trợ cả chữ hoa và chữ thường)
+        const variantsList = data.variants || data.Variants || [];
+        
+        // Chuẩn hóa lại object product để các phần UI bên dưới không bị lỗi
+        const normalizedProduct = {
+          ...data,
+          Variants: variantsList 
+        };
+
+        setProduct(normalizedProduct);
+
+        // Set variant mặc định là variant đầu tiên
+        if (variantsList.length > 0) {
+          setSelectedVariant(variantsList[0]);
+        }
       } catch (err) {
         console.error(err);
         setError(err.message || 'Không thể tải sản phẩm.');
@@ -33,6 +49,7 @@ const ChiTietSanPham = () => {
 
     fetchProduct();
   }, [id]);
+
   const handleIncrease = () => setQuantity(prev => prev + 1);
   const handleDecrease = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
@@ -49,14 +66,16 @@ const ChiTietSanPham = () => {
   }
 
   const imageSrc = product.urlImgMain || product.Images?.[0]?.imageUrl || 'https://placehold.co/500x500/8B0000/FFF?text=Hinh+Anh+Loi';
-  const price = product.Variants?.[0]?.price ?? 0;
+  const price = selectedVariant?.price ?? 0;
   const type = product.categoryName || 'Sản phẩm';
+  
+  // SỬA Ở ĐÂY: Đảm bảo lấy đúng trường stock chữ thường
+  const stock = selectedVariant?.stock ?? 0;
 
   return (
     <div style={styles.container}>
       
       <div style={styles.topSection}>
-        {/* Cột Trái: Đổi hình ảnh "chết" thành hình ảnh "động" */}
         <div style={styles.imageCol}>
           <img 
             src={imageSrc}
@@ -77,7 +96,6 @@ const ChiTietSanPham = () => {
           </div>
         </div>
 
-        {/* Cột Phải: Đổi Tên và Giá thành dữ liệu "động" */}
         <div style={styles.infoCol}>
           <h1 style={styles.productName}>{product.name}</h1>
           
@@ -91,8 +109,29 @@ const ChiTietSanPham = () => {
 
           <div style={styles.metaInfo}>
             <p><strong>Phân loại:</strong> <span>{type}</span></p>
-            <p><strong>Tình trạng:</strong> <span style={{color: 'green'}}>Còn hàng</span></p>
+            <p><strong>Tình trạng:</strong> <span style={{color: stock > 0 ? 'green' : 'red'}}>{stock > 0 ? 'Còn hàng' : 'Hết hàng'}</span></p>
           </div>
+
+          {/* Chọn loại sản phẩm */}
+          {product.Variants && product.Variants.length > 1 && (
+            <div style={styles.variantSection}>
+              <span style={styles.variantLabel}>Chọn loại:</span>
+              <div style={styles.variantOptions}>
+                {product.Variants.map((variant) => (
+                  <button
+                    key={variant.id}
+                    style={{
+                      ...styles.variantBtn,
+                      ...(selectedVariant?.id === variant.id ? styles.variantBtnActive : {})
+                    }}
+                    onClick={() => setSelectedVariant(variant)}
+                  >
+                    {variant.weight || 'Không xác định'} - {variant.price ? `${variant.price.toLocaleString('vi-VN')}₫` : 'Liên hệ'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div style={styles.quantitySection}>
             <span style={styles.quantityLabel}>Số lượng:</span>
@@ -105,21 +144,29 @@ const ChiTietSanPham = () => {
 
           <div style={styles.actionButtons}>
             <button
-              style={styles.addToCartBtn}
+              style={{
+                ...styles.addToCartBtn,
+                ...(stock <= 0 ? styles.disabledBtn : {})
+              }}
+              disabled={stock <= 0}
               onClick={() => addToCart({
-                variantId: product.Variants?.[0]?.id ?? product.id,
+                variantId: selectedVariant?.id ?? product.id,
                 name: product.name,
                 price,
                 image: imageSrc,
               }, quantity)}
             >
-              🛒 THÊM VÀO GIỎ HÀNG
+              🛒 {stock > 0 ? 'THÊM VÀO GIỎ HÀNG' : 'HẾT HÀNG'}
             </button>
             <button
-              style={styles.buyNowBtn}
+              style={{
+                ...styles.buyNowBtn,
+                ...(stock <= 0 ? styles.disabledBtn : {})
+              }}
+              disabled={stock <= 0}
               onClick={() => {
                 addToCart({
-                  variantId: product.Variants?.[0]?.id ?? product.id,
+                  variantId: selectedVariant?.id ?? product.id,
                   name: product.name,
                   price,
                   image: imageSrc,
@@ -127,7 +174,7 @@ const ChiTietSanPham = () => {
                 navigate('/gio-hang');
               }}
             >
-              MUA NGAY
+              {stock > 0 ? 'MUA NGAY' : 'HẾT HÀNG'}
             </button>
           </div>
         </div>
@@ -144,21 +191,17 @@ const ChiTietSanPham = () => {
           {product.Variants && product.Variants.length > 0 && (
             <>
               <h3>Thông số sản phẩm</h3>
-              <ul>
-                {product.Variants.map((variant) => (
-                  <li key={variant.id}>
-                    {variant.weight ? `${variant.weight}g` : 'Ký thước chưa xác định'} - {variant.price ? `${variant.price.toLocaleString('vi-VN')}₫` : 'Liên hệ'}
-                  </li>
-                ))}
-              </ul>
+              <div style={styles.variantInfo}>
+                <p><strong>Loại đã chọn:</strong> {selectedVariant?.weight || 'Không xác định'}</p>
+                <p><strong>Giá:</strong> {selectedVariant?.price ? `${selectedVariant.price.toLocaleString('vi-VN')}₫` : 'Liên hệ'}</p>
+                <p><strong>Tồn kho:</strong> {selectedVariant?.stock ?? 0} sản phẩm</p>
+              </div>
             </>
           )}
         </div>
       </div>
 
     </div>
-    
-    
   );
 };
 
@@ -239,7 +282,38 @@ const styles = {
     marginBottom: '30px',
     lineHeight: '1.8'
   },
-  
+
+  // Chọn variant
+  variantSection: {
+    marginBottom: '30px'
+  },
+  variantLabel: {
+    fontSize: '16px',
+    fontWeight: 'bold',
+    marginBottom: '10px',
+    display: 'block'
+  },
+  variantOptions: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '10px'
+  },
+  variantBtn: {
+    padding: '10px 15px',
+    border: '2px solid #ddd',
+    backgroundColor: '#fff',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    transition: 'all 0.3s',
+    whiteSpace: 'nowrap'
+  },
+  variantBtnActive: {
+    borderColor: '#8B0000',
+    backgroundColor: '#8B0000',
+    color: '#fff'
+  },
+
   // Chọn số lượng
   quantitySection: {
     display: 'flex',
@@ -308,6 +382,14 @@ const styles = {
     cursor: 'pointer'
   },
 
+  disabledBtn: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+    backgroundColor: '#ccc',
+    borderColor: '#ccc',
+    color: '#666'
+  },
+
   // KHU VỰC 2 (Mô tả)
   bottomSection: {
     borderTop: '1px solid #eee',
@@ -323,6 +405,12 @@ const styles = {
     fontSize: '16px',
     color: '#444',
     lineHeight: '1.8'
+  },
+  variantInfo: {
+    backgroundColor: '#f9f9f9',
+    padding: '15px',
+    borderRadius: '4px',
+    marginTop: '10px'
   }
 };
 

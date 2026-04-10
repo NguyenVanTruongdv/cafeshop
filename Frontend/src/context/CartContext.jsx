@@ -134,9 +134,20 @@ export const CartProvider = ({ children }) => {
     alert(`Đã thêm ${product.name ?? 'sản phẩm'} vào giỏ!`);
   };
 
-  const updateItemQuantity = async (cartItemId, quantity) => {
-    if (quantity < 1) return removeItem(cartItemId);
-
+  const updateItemQuantity = async (cartItemId, newQuantity) => {
+    if (newQuantity < 1) return removeItem(cartItemId);
+    setCartItems((prev) => {
+      const updated = prev.map((item) =>
+        item.id === cartItemId || item.variantId === cartItemId
+          ? { ...item, quantity: newQuantity, qty: newQuantity } 
+          : item
+      );
+      
+      if (!isAuthenticated || !user) {
+        saveLocalCart(updated);
+      }
+      return updated;
+    });
     if (isAuthenticated && user) {
       try {
         const res = await fetch(`${API_URL}/cart/update-item`, {
@@ -147,32 +158,39 @@ export const CartProvider = ({ children }) => {
           },
           body: JSON.stringify({
             cartItemId,
-            quantity,
+            quantity: newQuantity,
           }),
         });
-        if (!res.ok) return handleApiError(res);
+
+        if (!res.ok) {
+          handleApiError(res);
+          loadCart();
+          return;
+        }
+
         const response = await res.json();
-        const item = mapCartItemResponse(response?.data ?? {});
-        setCartItems((prev) =>
-          prev.map((x) =>
-            x.id === item.id || x.variantId === item.variantId
-              ? { ...x, qty: item.qty, price: item.price, name: item.name }
-              : x
-          )
-        );
+        if (response?.data) {
+          const itemServer = mapCartItemResponse(response.data);
+          
+          setCartItems((prev) =>
+            prev.map((x) =>
+              x.id === cartItemId || x.variantId === cartItemId
+                ? { 
+                    ...x, 
+                    quantity: newQuantity, 
+                    price: itemServer.price ?? x.price, 
+                    productName: itemServer.productName ?? itemServer.name ?? x.productName ?? x.name 
+                  }
+                : x
+            )
+          );
+        }
+
       } catch (err) {
+        console.error("Lỗi đồng bộ:", err);
         setError(err.message);
+        loadCart();
       }
-    } else {
-      setCartItems((prev) => {
-        const updated = prev.map((item) =>
-          item.id === cartItemId || item.variantId === cartItemId
-            ? { ...item, qty: quantity }
-            : item
-        );
-        saveLocalCart(updated);
-        return updated;
-      });
     }
   };
 
