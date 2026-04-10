@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ProductCard from '../components/ProductCard';
-
-const API_URL = 'http://localhost:5224/api/products';
+import { API_PRODUCTS_URL } from '../apiConfig';
 
 const SanPham = () => {
   const [products, setProducts] = useState([]);
@@ -14,7 +13,7 @@ const SanPham = () => {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(API_URL);
+      const res = await fetch(API_PRODUCTS_URL);
         if (!res.ok) throw new Error('Lấy sản phẩm thất bại');
         const data = await res.json();
         setProducts(Array.isArray(data) ? data : []);

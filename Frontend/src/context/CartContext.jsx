@@ -1,8 +1,7 @@
 // File: src/context/CartContext.jsx
 import React, { createContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-
-const API_URL = 'http://localhost:5224/api';
+import { API_URL } from '../apiConfig';
 
 export const CartContext = createContext();
 

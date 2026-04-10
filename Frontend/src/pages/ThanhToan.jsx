@@ -3,8 +3,7 @@ import React, { useContext, useState } from 'react';
 import { CartContext } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-
-const API_URL = 'http://localhost:5224/api';
+import { API_URL } from '../apiConfig';
 
 const ThanhToan = () => {
   const { cartItems, cartTotal, clearCart } = useContext(CartContext);

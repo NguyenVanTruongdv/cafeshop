@@ -1,8 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
-
-const API_URL = 'http://localhost:5224/api/products';
+import { API_PRODUCTS_URL } from '../apiConfig';
 
 const ChiTietSanPham = () => {
   const { id } = useParams();
@@ -18,7 +17,7 @@ const ChiTietSanPham = () => {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(`${API_URL}/${id}`);
+        const res = await fetch(`${API_PRODUCTS_URL}/${id}`);
         if (!res.ok) {
           throw new Error('Sản phẩm không tồn tại');
         }

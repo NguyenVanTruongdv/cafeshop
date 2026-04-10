@@ -1,8 +1,7 @@
 import React, { useParams, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
-const API_URL = 'http://localhost:5224/api';
+import { API_URL } from '../apiConfig';
 
 const ChiTietDonHang = () => {
   const { id } = useParams();

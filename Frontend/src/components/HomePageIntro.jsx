@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from './ProductCard';
-
-const API_URL = 'http://localhost:5224/api/products';
+import { API_PRODUCTS_URL } from '../apiConfig';
 
 const HomePageIntro = () => {
   const [miniProducts, setMiniProducts] = useState([]);
@@ -14,7 +13,7 @@ const HomePageIntro = () => {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(API_URL);
+        const res = await fetch(API_PRODUCTS_URL);
         if (!res.ok) {
           throw new Error('Không thể lấy dữ liệu sản phẩm');
         }

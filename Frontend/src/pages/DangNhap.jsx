@@ -2,8 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
-const API_URL = 'http://localhost:5224/api';
+import { API_URL } from '../apiConfig';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
