@@ -46,6 +46,7 @@ namespace CafeShopAPI.Services
             return await _context.Orders
                 .Include(o => o.OrderDetails)
                 .ThenInclude(od => od.Variant)
+                .ThenInclude(v => v.Product)
                 .FirstOrDefaultAsync(o=>o.Id==orderId);
         }
         public async Task<List<Order>> GetOrderByUserIdAsync(int userId)
