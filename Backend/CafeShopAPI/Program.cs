@@ -1,12 +1,11 @@
+using CafeShopAPI;
+using CafeShopAPI.Data;
+using CafeShopAPI.DTOs;
 using CafeShopAPI.Services;
 using Microsoft.EntityFrameworkCore;
-using CafeShopAPI;
-﻿using CafeShopAPI.Data;
-using CafeShopAPI.DTOs;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-// using CafeShopAPI.Data;
-// using CafeShopAPI.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // =======================
@@ -15,21 +14,26 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Controllers
 builder.Services.AddControllers();
-//
+
+// Infrastructure (nếu bạn có extension này)
 builder.Services.AddInfrastructure();
 
-// Add services
-builder.Services.AddScoped<AuthService>();
+// =======================
+// JWT AUTH
+// =======================
+var jwtKey = builder.Configuration["Jwt:Key"];
+
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
+        var key = Encoding.UTF8.GetBytes(jwtKey);
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
 
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
@@ -40,11 +44,43 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
 
 builder.Services.AddAuthorization();
 
-// Swagger
+// =======================
+// DATABASE (Railway MySQL)
+// =======================
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+// =======================
+// SERVICES (DI)
+// =======================
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<AddressService>();
+
+builder.Services.AddScoped<CategoryService>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<ProductVariantService>();
+builder.Services.AddScoped<ProductImageService>();
+
+builder.Services.AddHttpContextAccessor();
+
+// =======================
+// AUTOMAPPER
+// =======================
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+// =======================
+// SWAGGER
+// =======================
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// =======================
 // CORS
+// =======================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -55,56 +91,27 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Database
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
-
-// DI Services
-builder.Services.AddScoped<CategoryService>();
-builder.Services.AddScoped<ProductService>();
-builder.Services.AddScoped<ProductVariantService>();
-builder.Services.AddScoped<ProductImageService>();
-
-
-// builder.Services.AddScoped<DanhMucService>();
-// builder.Services.AddScoped<SanPhamService>();
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<JwtService>();
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<AddressService>();
-builder.Services.AddHttpContextAccessor();
-
-// DTOs
-builder.Services.AddAutoMapper(typeof(MappingProfile));
 var app = builder.Build();
 
-// Swagger
-
-// Enable CORS
-app.UseCors("AllowAll");
+// =======================
+// MIDDLEWARE
+// =======================
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// Static files (ảnh)
 app.UseStaticFiles();
 
 app.UseCors("AllowAll");
 
-// HTTPS
 app.UseHttpsRedirection();
 
-// Auth (nếu có)
-
-app.UseAuthentication(); // PHẢI có
+app.UseAuthentication();
 app.UseAuthorization();
 
-// Map controllers
 app.MapControllers();
 
 // Test API
-app.MapGet("/ping", () => Results.Ok("API is alive"));
+app.MapGet("/ping", () => "API is alive");
 
 app.Run();
