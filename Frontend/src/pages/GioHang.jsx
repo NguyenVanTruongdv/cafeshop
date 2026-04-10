@@ -4,12 +4,35 @@ import { Link } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 
 const GioHang = () => {
-  const { cartItems, cartTotal } = useContext(CartContext);
+  const { cartItems, cartTotal, updateItemQuantity, removeItem, loadCart, loading, error } = useContext(CartContext);
+
+  const handleDecrease = (item) => {
+    if (item.qty > 1) {
+      updateItemQuantity(item.id, item.qty - 1);
+    }
+  };
+
+  const handleIncrease = (item) => {
+    updateItemQuantity(item.id, item.qty + 1);
+  };
+
+  const handleRemove = (item) => {
+    removeItem(item.id);
+  };
 
   return (
     <div style={styles.container}>
       <h1 style={styles.pageTitle}>GIỎ HÀNG CỦA BẠN</h1>
-      {cartItems.length === 0 ? (
+      {loading ? (
+        <div style={{textAlign: 'center', padding: '50px'}}>
+          <h3 style={{color: '#666', marginBottom: '20px'}}>Đang tải giỏ hàng...</h3>
+        </div>
+      ) : error ? (
+        <div style={{textAlign: 'center', padding: '50px'}}>
+          <h3 style={{color: '#d00', marginBottom: '20px'}}>{error}</h3>
+          <button style={styles.updateBtn} onClick={loadCart}>Tải lại</button>
+        </div>
+      ) : cartItems.length === 0 ? (
         <div style={{textAlign: 'center', padding: '50px'}}>
           <h3 style={{color: '#666', marginBottom: '20px'}}>Giỏ hàng của bạn đang trống!</h3>
           <Link to="/san-pham" style={styles.continueBtn}>
@@ -36,22 +59,28 @@ const GioHang = () => {
                   {cartItems.map((item) => (
                     <tr key={item.id}>
                       <td style={styles.tdCenter}>
-                        <button style={styles.removeBtn}>×</button>
+                        <button style={styles.removeBtn} onClick={() => handleRemove(item)}>
+                          ×
+                        </button>
                       </td>
                       <td style={styles.tdCenter}>
-                        <img src={item.image} alt={item.name} style={styles.productImg} />
+                        <img
+                          src={item.image || 'https://placehold.co/80x80/8B0000/FFF?text=No+Image'}
+                          alt={item.name}
+                          style={styles.productImg}
+                        />
                       </td>
-                      <td style={{...styles.td, color: '#4a6b8c'}}>
-                        {item.name} 
+                      <td style={{ ...styles.td, color: '#4a6b8c' }}>
+                        {item.name}
                       </td>
                       <td style={styles.tdCenter}>
-                        <strong>{item.price.toLocaleString('vi-VN')}₫</strong> 
+                        <strong>{item.price.toLocaleString('vi-VN')}₫</strong>
                       </td>
                       <td style={styles.tdCenter}>
                         <div style={styles.qtyBox}>
-                          <button style={styles.qtyBtn}>-</button>
+                          <button style={styles.qtyBtn} onClick={() => handleDecrease(item)}>-</button>
                           <input type="text" value={item.qty} readOnly style={styles.qtyInput} />
-                          <button style={styles.qtyBtn}>+</button>
+                          <button style={styles.qtyBtn} onClick={() => handleIncrease(item)}>+</button>
                         </div>
                       </td>
                       <td style={styles.tdCenter}>
@@ -67,7 +96,7 @@ const GioHang = () => {
               <Link to="/san-pham" style={styles.continueBtn}>
                 ← TIẾP TỤC XEM SẢN PHẨM
               </Link>
-              <button style={styles.updateBtn}>
+              <button style={styles.updateBtn} onClick={loadCart}>
                 CẬP NHẬT GIỎ HÀNG
               </button>
             </div>

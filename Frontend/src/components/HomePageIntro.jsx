@@ -1,13 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-const miniProducts = [
-  { id: 1, category: "CAFE", name: "Cà phê nguyên chất Hạt CULI (đặc biệt)", price: "320.000đ", img: "/images/Cà phê nguyên chất Hạt CULI (đặc biệt).jpg" },
-  { id: 2, category: "CAFE", name: "Cà phê nguyên chất Hạt ESPRESSO BLEND 1", price: "370.000đ", img: "/images/ESPRESSO BLEND 2 .jpg" },
-  { id: 3, category: "CAFE", name: "Cà phê nguyên chất Hạt ESPRESSO BLEND 2", price: "400.000đ", img: "/images/Cà phê nguyên chất Hạt ESPRESSO BLEND 2.jpg" },
-  { id: 4, category: "CAFE", name: "Cà phê nguyên chất Hạt Thượng Hạng 2 ", price: "43.000đ", img: "/images/Hạt Thượng Hạng 2.jpg", outOfStock: true } // Thêm cờ hết hàng cho thẻ thứ 4
-];
+import ProductCard from './ProductCard';
+
+const API_URL = 'http://localhost:5224/api/products';
 
 const HomePageIntro = () => {
+  const [miniProducts, setMiniProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const res = await fetch(API_URL);
+        if (!res.ok) {
+          throw new Error('Không thể lấy dữ liệu sản phẩm');
+        }
+        const data = await res.json();
+        const items = Array.isArray(data) ? data.slice(0, 4) : [];
+        setMiniProducts(items);
+      } catch (err) {
+        console.error(err);
+        setError('Tải sản phẩm nổi bật thất bại. Vui lòng thử lại sau.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   return (
     <div style={styles.introSection}>
       
@@ -33,25 +57,17 @@ const HomePageIntro = () => {
         </p>
 
         <div style={styles.productGrid}>
-          {miniProducts.map((p) => (
-            <div key={p.id} style={styles.miniCard}>
-              
-              <div style={styles.miniImgWrapper}>
-                <img src={p.img} alt={p.name} style={styles.miniImg} />
-                {p.outOfStock && (
-                  <div style={styles.outOfStockOverlay}>HẾT HÀNG</div>
-                )}
-              </div>
-
-              <div style={styles.redRibbon}></div>
-
-              <p style={styles.miniCat}>{p.category}</p>
-             <Link to={`/san-pham/${p.id}`} style={{ textDecoration: 'none' }}>
-                <h4 style={styles.miniName}>{p.name}</h4>
-              </Link>
-              <p style={styles.miniPrice}>{p.price}</p>
-            </div>
-          ))}
+          {loading ? (
+            <div style={styles.loadingMessage}>Đang tải sản phẩm nổi bật...</div>
+          ) : error ? (
+            <div style={styles.errorMessage}>{error}</div>
+          ) : miniProducts.length === 0 ? (
+            <div style={styles.emptyMessage}>Chưa có sản phẩm nổi bật để hiển thị.</div>
+          ) : (
+            miniProducts.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))
+          )}
         </div>
         
       </div>
@@ -111,32 +127,6 @@ const styles = {
     flexDirection: 'column',
     textAlign: 'left'
   },
-  
-  miniImgWrapper: {
-    position: 'relative',
-    width: '100%',
-    marginBottom: '10px',
-    overflow: 'hidden'
-  },
-  miniImg: {
-    width: '100%',
-    height: '250px', 
-    objectFit: 'cover'
-  },
-  outOfStockOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    color: '#000',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontWeight: 'bold',
-    fontSize: '14px'
-  },
 
   redRibbon: {
     height: '4px',
@@ -144,23 +134,41 @@ const styles = {
     width: '100%',
     marginBottom: '10px'
   },
-  miniCat: {
-    fontSize: '11px',
-    color: '#999',
-    textTransform: 'uppercase',
-    marginBottom: '4px'
+  loadingMessage: {
+    gridColumn: '1 / -1',
+    textAlign: 'center',
+    color: '#8B0000',
+    padding: '30px 0'
   },
-  miniName: {
-    fontSize: '14px',
-    color: '#333',
-    fontWeight: 'normal',
-    marginBottom: '6px',
-    minHeight: '40px'
+  errorMessage: {
+    gridColumn: '1 / -1',
+    textAlign: 'center',
+    color: '#D32F2F',
+    padding: '30px 0'
   },
-  miniPrice: {
-    fontSize: '15px',
-    fontWeight: 'bold',
-    color: '#000'
+  emptyMessage: {
+    gridColumn: '1 / -1',
+    textAlign: 'center',
+    color: '#555',
+    padding: '30px 0'
+  },
+  loadingMessage: {
+    gridColumn: '1 / -1',
+    textAlign: 'center',
+    color: '#8B0000',
+    padding: '30px 0'
+  },
+  errorMessage: {
+    gridColumn: '1 / -1',
+    textAlign: 'center',
+    color: '#D32F2F',
+    padding: '30px 0'
+  },
+  emptyMessage: {
+    gridColumn: '1 / -1',
+    textAlign: 'center',
+    color: '#555',
+    padding: '30px 0'
   }
 };
 

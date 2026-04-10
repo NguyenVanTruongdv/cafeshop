@@ -1,24 +1,57 @@
-import React, { useState } from 'react';
-// 1. Lấy công cụ bắt ID trên đường link
-import { useParams } from 'react-router-dom'; 
-// 2. Lấy kho dữ liệu của bạn vào
-import { coffeeProducts } from '../services/mockData'; 
+import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { CartContext } from '../context/CartContext';
+
+const API_URL = 'http://localhost:5224/api/products';
 
 const ChiTietSanPham = () => {
-  // 3. Bắt cái ID từ trên thanh địa chỉ (ví dụ: /san-pham/1 -> lấy số 1)
   const { id } = useParams();
-
-  // 4. Vào kho dữ liệu, tìm cái sản phẩm có id trùng khớp
-  const product = coffeeProducts.find((p) => p.id === parseInt(id));
-
+  const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const { addToCart } = useContext(CartContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const res = await fetch(`${API_URL}/${id}`);
+        if (!res.ok) {
+          throw new Error('Sản phẩm không tồn tại');
+        }
+        const data = await res.json();
+        setProduct(data);
+      } catch (err) {
+        console.error(err);
+        setError(err.message || 'Không thể tải sản phẩm.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
   const handleIncrease = () => setQuantity(prev => prev + 1);
   const handleDecrease = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
-  // 5. Nếu khách gõ bậy bạ ID không có thật thì báo lỗi
-  if (!product) {
-    return <h2 style={{textAlign: 'center', marginTop: '50px'}}>Sản phẩm không tồn tại!</h2>;
+  if (loading) {
+    return <h2 style={{ textAlign: 'center', marginTop: '50px' }}>Đang tải thông tin sản phẩm...</h2>;
   }
+
+  if (error) {
+    return <h2 style={{ textAlign: 'center', marginTop: '50px' }}>{error}</h2>;
+  }
+
+  if (!product) {
+    return <h2 style={{ textAlign: 'center', marginTop: '50px' }}>Sản phẩm không tồn tại!</h2>;
+  }
+
+  const imageSrc = product.urlImgMain || product.Images?.[0]?.imageUrl || 'https://placehold.co/500x500/8B0000/FFF?text=Hinh+Anh+Loi';
+  const price = product.Variants?.[0]?.price ?? 0;
+  const type = product.categoryName || 'Sản phẩm';
 
   return (
     <div style={styles.container}>
@@ -27,33 +60,39 @@ const ChiTietSanPham = () => {
         {/* Cột Trái: Đổi hình ảnh "chết" thành hình ảnh "động" */}
         <div style={styles.imageCol}>
           <img 
-            src={product.image}  // <-- Dữ liệu động
+            src={imageSrc}
             alt={product.name} 
             style={styles.mainImage}
             onError={(e) => { e.target.src = 'https://placehold.co/500x500/8B0000/FFF?text=Hinh+Anh+Loi'; }}
           />
           <div style={styles.thumbnailList}>
-            <img src={product.image} alt="thumb1" style={styles.thumbnail} />
-            <img src="https://placehold.co/100x100/4B2C20/FFF?text=Hinh+2" alt="thumb2" style={styles.thumbnail} />
+            {(product.Images || []).map((img, index) => (
+              <img
+                key={index}
+                src={img.imageUrl || img.ImageUrl || imageSrc}
+                alt={`thumb${index + 1}`}
+                style={styles.thumbnail}
+                onError={(e) => { e.target.src = 'https://placehold.co/100x100/8B0000/FFF?text=Loi'; }}
+              />
+            ))}
           </div>
         </div>
 
         {/* Cột Phải: Đổi Tên và Giá thành dữ liệu "động" */}
         <div style={styles.infoCol}>
-          <h1 style={styles.productName}>{product.name}</h1> {/* <-- Tên tự đổi */}
+          <h1 style={styles.productName}>{product.name}</h1>
           
           <div style={styles.redLine}></div>
 
-          <p style={styles.productPrice}>{product.price.toLocaleString('vi-VN')}₫</p> {/* <-- Giá tự đổi */}
+          <p style={styles.productPrice}>{price > 0 ? `${price.toLocaleString('vi-VN')}₫` : 'Liên hệ'}</p>
           
           <p style={styles.shortDesc}>
-            Dòng sản phẩm chất lượng cao của Chất Coffee. Phân loại: <strong>{product.type}</strong>. 
-            Cam kết 100% nguyên chất, không tẩm ướp, mang lại hương vị đậm đà nguyên bản.
+            {product.description || 'Mô tả sản phẩm sẽ hiển thị ở đây khi dữ liệu từ backend có sẵn.'}
           </p>
 
           <div style={styles.metaInfo}>
+            <p><strong>Phân loại:</strong> <span>{type}</span></p>
             <p><strong>Tình trạng:</strong> <span style={{color: 'green'}}>Còn hàng</span></p>
-            <p><strong>Quy cách:</strong> Gói 500g</p>
           </div>
 
           <div style={styles.quantitySection}>
@@ -66,30 +105,55 @@ const ChiTietSanPham = () => {
           </div>
 
           <div style={styles.actionButtons}>
-            <button style={styles.addToCartBtn}>🛒 THÊM VÀO GIỎ HÀNG</button>
-            <button style={styles.buyNowBtn}>MUA NGAY</button>
+            <button
+              style={styles.addToCartBtn}
+              onClick={() => addToCart({
+                variantId: product.Variants?.[0]?.id ?? product.id,
+                name: product.name,
+                price,
+                image: imageSrc,
+              }, quantity)}
+            >
+              🛒 THÊM VÀO GIỎ HÀNG
+            </button>
+            <button
+              style={styles.buyNowBtn}
+              onClick={() => {
+                addToCart({
+                  variantId: product.Variants?.[0]?.id ?? product.id,
+                  name: product.name,
+                  price,
+                  image: imageSrc,
+                }, quantity);
+                navigate('/gio-hang');
+              }}
+            >
+              MUA NGAY
+            </button>
           </div>
         </div>
       </div>
      <div style={styles.bottomSection}>
         <h2 style={styles.descTitle}>MÔ TẢ SẢN PHẨM</h2>
         <div style={styles.descContent}>
-          <p><strong>CCà phê nguyên chất Hạt CULI (đặc biệt)</strong> là sự lựa chọn tối ưu cho các tín đồ yêu thích gu cà phê pha máy đậm đà chuẩn vị Ý nhưng vẫn mang đậm bản sắc cà phê Việt.</p>
-          
-          <h3>Thành phần & Kỹ thuật rang</h3>
-          <ul>
-            <li><strong>Thành phần:</strong> 70% Robusta Đăk Mil (Size 18) - 30% Arabica Cầu Đất.</li>
-            <li><strong>Mức độ rang (Roast level):</strong> Medium Dark (Rang đậm vừa) bằng công nghệ Hot Air hiện đại, đảm bảo hạt chín đều từ trong ra ngoài, không bị khét.</li>
-            <li><strong>Đặc tính:</strong> Không bơ, không mắm muối, không hương liệu nhân tạo. 100% mộc.</li>
-          </ul>
+          {product.description ? (
+            <p>{product.description}</p>
+          ) : (
+            <p>Thông tin mô tả sản phẩm đang được cập nhật từ cơ sở dữ liệu.</p>
+          )}
 
-          <h3>Hướng dẫn sử dụng (Dành cho máy Espresso)</h3>
-          <p>Để chiết xuất được ly Espresso hoàn hảo nhất, vui lòng lưu ý:</p>
-          <ul>
-            <li>Chỉ xay cà phê ngay trước khi pha để giữ trọn vẹn hương thơm.</li>
-            <li>Mức xay (Grind size): Mịn vừa (Fine). Nếu nước chảy quá nhanh, hãy chỉnh cối xay mịn hơn; nếu chảy chậm hoặc nhỏ giọt, hãy chỉnh thô hơn một chút.</li>
-            <li>Lượng cà phê (Dose): Khoảng 18g - 20g cho một shot đôi (Double shot).</li>
-          </ul>
+          {product.Variants && product.Variants.length > 0 && (
+            <>
+              <h3>Thông số sản phẩm</h3>
+              <ul>
+                {product.Variants.map((variant) => (
+                  <li key={variant.id}>
+                    {variant.weight ? `${variant.weight}g` : 'Ký thước chưa xác định'} - {variant.price ? `${variant.price.toLocaleString('vi-VN')}₫` : 'Liên hệ'}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       </div>
 

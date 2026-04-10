@@ -1,16 +1,115 @@
 // File: src/pages/ThanhToan.jsx
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { CartContext } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+const API_URL = 'http://localhost:5224/api';
 
 const ThanhToan = () => {
-  const { cartItems, cartTotal } = useContext(CartContext);
+  const { cartItems, cartTotal, clearCart } = useContext(CartContext);
+  const { user, isAuthenticated, token } = useAuth();
+  const navigate = useNavigate();
+  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    fullName: '',
+    phone: '',
+    email: '',
+    address: '',
+    notes: '',
+    paymentMethod: 'COD',
+  });
 
-  const shippingFee = cartTotal > 500000 ? 0 : 30000; 
+  const shippingFee = cartTotal > 500000 ? 0 : 30000;
   const finalTotal = cartTotal + shippingFee;
 
-  const handlePlaceOrder = (e) => {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
-    alert("FE2: Viết logic lấy thông tin Form + Giỏ hàng để lưu vào bảng Order, OrderDetail và Address nhé!");
+    setError('');
+
+    if (!isAuthenticated || !user) {
+      setError('Vui lòng đăng nhập để đặt hàng.');
+      navigate('/dang-nhap');
+      return;
+    }
+
+    if (!formData.fullName.trim() || !formData.phone.trim() || !formData.address.trim()) {
+      setError('Vui lòng điền đầy đủ các trường bắt buộc.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Create address first
+      const addressRes = await fetch(`${API_URL}/Address`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          recipientName: formData.fullName,
+          phone: formData.phone,
+          email: formData.email || user.email,
+          addressLine: formData.address,
+        }),
+      });
+
+      if (!addressRes.ok) {
+        const data = await addressRes.json();
+        throw new Error(data?.message || 'Không thể tạo địa chỉ giao hàng.');
+      }
+
+      const addressData = await addressRes.json();
+      const addressId = addressData?.data?.id;
+
+      if (!addressId) {
+        throw new Error('Không nhận được ID địa chỉ từ server.');
+      }
+
+      // Create order
+      const orderRes = await fetch(`${API_URL}/Order/checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          addressId,
+          paymentMethod: formData.paymentMethod,
+          notes: formData.notes,
+        }),
+      });
+
+      if (!orderRes.ok) {
+        const data = await orderRes.json();
+        throw new Error(data?.message || 'Không thể tạo đơn hàng.');
+      }
+
+      const orderData = await orderRes.json();
+      const orderId = orderData?.data?.id;
+
+      clearCart();
+      alert('Đặt hàng thành công!');
+      navigate(`/lich-su-don-hang/${orderId}`);
+    } catch (err) {
+      setError(err.message || 'Lỗi kết nối server. Vui lòng thử lại.');
+      console.error('Order error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -21,26 +120,58 @@ const ThanhToan = () => {
         
         <div style={styles.leftCol}>
           <h2 style={styles.sectionTitle}>THÔNG TIN THANH TOÁN</h2>
+          {error && <div style={{ color: '#d00', marginBottom: '20px', padding: '12px', backgroundColor: '#fdecea', borderRadius: '4px' }}>{error}</div>}
           
           <div style={styles.inputGroup}>
             <label style={styles.label}>Họ và tên người nhận *</label>
-            <input type="text" placeholder="Nhập họ tên đầy đủ" style={styles.input} required />
+            <input 
+              type="text" 
+              placeholder="Nhập họ tên đầy đủ" 
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleInputChange}
+              style={styles.input} 
+              required 
+            />
           </div>
 
           <div style={styles.rowInput}>
             <div style={{...styles.inputGroup, flex: 1}}>
               <label style={styles.label}>Số điện thoại *</label>
-              <input type="tel" placeholder="Ví dụ: 0912345678" style={styles.input} required />
+              <input 
+                type="tel" 
+                placeholder="Ví dụ: 0912345678" 
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                style={styles.input} 
+                required 
+              />
             </div>
             <div style={{...styles.inputGroup, flex: 1}}>
               <label style={styles.label}>Địa chỉ Email</label>
-              <input type="email" placeholder="Để nhận hóa đơn" style={styles.input} />
+              <input 
+                type="email" 
+                placeholder="Để nhận hóa đơn" 
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                style={styles.input} 
+              />
             </div>
           </div>
 
           <div style={styles.inputGroup}>
             <label style={styles.label}>Địa chỉ giao hàng chi tiết *</label>
-            <input type="text" placeholder="Số nhà, tên đường, phường/xã, quận/huyện..." style={styles.input} required />
+            <input 
+              type="text" 
+              placeholder="Số nhà, tên đường, phường/xã, quận/huyện..." 
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+              style={styles.input} 
+              required 
+            />
           </div>
           <div style={styles.mapSection}>
             <label style={styles.label}>📍 Chọn vị trí trên bản đồ để giao hàng chính xác hơn (Tùy chọn)</label>
@@ -60,7 +191,14 @@ const ThanhToan = () => {
 
           <div style={styles.inputGroup}>
             <label style={styles.label}>Ghi chú đơn hàng</label>
-            <textarea placeholder="Ghi chú về giao hàng, ví dụ: Giao giờ hành chính..." style={styles.textarea} rows="4"></textarea>
+            <textarea 
+              placeholder="Ghi chú về giao hàng, ví dụ: Giao giờ hành chính..." 
+              name="notes"
+              value={formData.notes}
+              onChange={handleInputChange}
+              style={styles.textarea} 
+              rows="4"
+            ></textarea>
           </div>
         </div>
 
@@ -77,7 +215,7 @@ const ThanhToan = () => {
               </thead>
               <tbody>
                 {cartItems.map(item => (
-                  <tr key={item.id}>
+                  <tr key={item.id || item.variantId}>
                     <td style={styles.tdLeft}>
                       {item.name} <strong style={{color: '#8B0000'}}>x {item.qty}</strong>
                     </td>
@@ -108,7 +246,15 @@ const ThanhToan = () => {
             </table>
             <div style={styles.paymentMethods}>
               <div style={styles.radioGroup}>
-                <input type="radio" id="cod" name="payment" defaultChecked style={styles.radio} />
+                <input 
+                  type="radio" 
+                  id="cod" 
+                  name="paymentMethod" 
+                  value="COD"
+                  checked={formData.paymentMethod === 'COD'}
+                  onChange={handleInputChange}
+                  style={styles.radio} 
+                />
                 <label htmlFor="cod" style={styles.radioLabel}>Thanh toán khi nhận hàng (COD)</label>
               </div>
               <div style={styles.paymentDesc}>
@@ -116,7 +262,15 @@ const ThanhToan = () => {
               </div>
 
               <div style={styles.radioGroup}>
-                <input type="radio" id="bank" name="payment" style={styles.radio} />
+                <input 
+                  type="radio" 
+                  id="bank" 
+                  name="paymentMethod" 
+                  value="BankTransfer"
+                  checked={formData.paymentMethod === 'BankTransfer'}
+                  onChange={handleInputChange}
+                  style={styles.radio} 
+                />
                 <label htmlFor="bank" style={styles.radioLabel}>Chuyển khoản ngân hàng</label>
               </div>
             </div>
@@ -125,8 +279,12 @@ const ThanhToan = () => {
               Dữ liệu cá nhân của bạn sẽ được sử dụng để xử lý đơn hàng và hỗ trợ trải nghiệm trên toàn bộ trang web.
             </p>
 
-            <button type="submit" style={styles.submitBtn}>
-              XÁC NHẬN ĐẶT HÀNG
+            <button 
+              type="submit" 
+              style={{...styles.submitBtn, opacity: loading ? 0.6 : 1}}
+              disabled={loading}
+            >
+              {loading ? 'ĐANG XỬ LÝ...' : 'XÁC NHẬN ĐẶT HÀNG'}
             </button>
           </div>
         </div>
