@@ -1,19 +1,115 @@
 // File: src/pages/Auth.jsx
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../apiConfig';
 
 const Auth = () => {
+  const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [success, setSuccess] = useState('');
+  const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    const mode = searchParams.get('mode');
+    setIsLogin(mode !== 'register');
+  }, [searchParams]);
 
   const toggleMode = () => {
+    setMessage('');
+    setSuccess('');
     setIsLogin(!isLogin);
   };
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage('');
+
+    if (!email.trim() || !password.trim()) {
+      setMessage('Vui lòng nhập email và mật khẩu.');
+      return;
+    }
+
     if (isLogin) {
-      alert("FE2: Viết logic Đăng nhập (gọi API login) ở đây!");
-    } else {
-      alert("FE2: Viết logic Đăng ký (gọi API register) ở đây!");
+      try {
+        const res = await fetch(`${API_URL}/Auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+            password: password,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.data) {
+          setMessage(data.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
+          return;
+        }
+
+        login({ token: data.data.token, user: data.data.user });
+        setSuccess('Đăng nhập thành công!');
+        setMessage('');
+        setTimeout(() => {
+          navigate('/');
+        }, 800);
+      } catch (error) {
+        setMessage('Lỗi kết nối server. Vui lòng thử lại.');
+        console.error('Login error:', error);
+      }
+      return;
+    }
+
+    if (!name.trim()) {
+      setMessage('Vui lòng nhập họ tên.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setMessage('Mật khẩu xác nhận không khớp.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/Auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          password: password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.data) {
+        setMessage(data.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+        return;
+      }
+
+      setSuccess('Đăng ký thành công! Vui lòng đăng nhập.');
+      setMessage('');
+      setName('');
+      setPassword('');
+      setConfirmPassword('');
+      setTimeout(() => {
+        navigate('/dang-nhap?mode=login');
+      }, 800);
+    } catch (error) {
+      setMessage('Lỗi kết nối server. Vui lòng thử lại.');
+      console.error('Register error:', error);
     }
   };
 
@@ -34,13 +130,13 @@ const Auth = () => {
           <div style={styles.toggleWrapper}>
             <button 
               style={{...styles.toggleBtn, ...(isLogin ? styles.activeToggle : {})}}
-              onClick={() => setIsLogin(true)}
+              onClick={() => { if (!isLogin) toggleMode(); }}
             >
               Đăng Nhập
             </button>
             <button 
               style={{...styles.toggleBtn, ...(!isLogin ? styles.activeToggle : {})}}
-              onClick={() => setIsLogin(false)}
+              onClick={() => { if (isLogin) toggleMode(); }}
             >
               Đăng Ký
             </button>
@@ -48,28 +144,58 @@ const Auth = () => {
         </div>
 
         <form style={styles.form} onSubmit={handleSubmit}>
-          
+          {success && <div style={styles.successMessage}>{success}</div>}
+          {message && !success && <div style={styles.message}>{message}</div>}
+
           {!isLogin && (
             <div style={styles.inputGroup}>
               <label style={styles.label}>Họ và tên *</label>
-              <input type="text" placeholder="Nhập họ tên của bạn" style={styles.input} required />
+              <input
+                type="text"
+                placeholder="Nhập họ tên của bạn"
+                style={styles.input}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
             </div>
           )}
 
           <div style={styles.inputGroup}>
             <label style={styles.label}>Email *</label>
-            <input type="email" placeholder="Nhập địa chỉ email" style={styles.input} required />
+            <input
+              type="email"
+              placeholder="Nhập địa chỉ email"
+              style={styles.input}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
 
           <div style={styles.inputGroup}>
             <label style={styles.label}>Mật khẩu *</label>
-            <input type="password" placeholder="Nhập mật khẩu" style={styles.input} required />
+            <input
+              type="password"
+              placeholder="Nhập mật khẩu"
+              style={styles.input}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
 
           {!isLogin && (
             <div style={styles.inputGroup}>
               <label style={styles.label}>Nhập lại mật khẩu *</label>
-              <input type="password" placeholder="Xác nhận mật khẩu" style={styles.input} required />
+              <input
+                type="password"
+                placeholder="Xác nhận mật khẩu"
+                style={styles.input}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
             </div>
           )}
 
@@ -189,6 +315,22 @@ const styles = {
     cursor: 'pointer',
     marginTop: '10px',
     transition: 'background-color 0.3s'
+  },
+  successMessage: {
+    marginBottom: '20px',
+    padding: '12px 14px',
+    borderRadius: '8px',
+    backgroundColor: '#e9f8ef',
+    color: '#0b6b2f',
+    border: '1px solid #b7e0c7'
+  },
+  message: {
+    marginBottom: '20px',
+    padding: '12px 14px',
+    borderRadius: '8px',
+    backgroundColor: '#fdecea',
+    color: '#a00',
+    border: '1px solid #f5c2c7'
   },
   
   forgotPassword: {

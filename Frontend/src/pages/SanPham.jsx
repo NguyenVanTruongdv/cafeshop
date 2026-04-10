@@ -1,19 +1,43 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ProductCard from '../components/ProductCard';
-import { coffeeProducts } from '../services/mockData';
+import { API_PRODUCTS_URL } from '../apiConfig';
 
 const SanPham = () => {
+  const [products, setProducts] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const displayedProducts = categoryFilter === 'all' 
-    ? coffeeProducts 
-    : coffeeProducts.filter(p => p.category === categoryFilter);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError('');
+      try {
+      const res = await fetch(API_PRODUCTS_URL);
+        if (!res.ok) throw new Error('Lấy sản phẩm thất bại');
+        const data = await res.json();
+        setProducts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+        setError('Không thể tải sản phẩm từ server.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const displayedProducts = categoryFilter === 'all'
+    ? products
+    : products.filter(p => p.categoryName === categoryFilter);
 
   return (
     <div style={styles.container}>
       <h1 style={styles.pageTitle}>DANH MỤC SẢN PHẨM</h1>
       <div style={styles.toolbar}>
         <div style={styles.resultsText}>
-          Hiển thị 1–{displayedProducts.length} của {displayedProducts.length} kết quả
+          Hiển thị 1–{displayedProducts.length} của {products.length} kết quả
         </div>
         <div style={styles.filterWrapper}>
           <select 
@@ -22,19 +46,26 @@ const SanPham = () => {
             onChange={(e) => setCategoryFilter(e.target.value)}
           >
             <option value="all">Tất cả sản phẩm</option>
-            <option value="hat">Cà phê hạt nguyên chất</option>
-            <option value="bot">Cà phê bột rang xay</option>
-            <option value="may">Cà phê pha máy (Espresso)</option>
+            <option value="Cà phê hạt">Cà phê hạt nguyên chất</option>
+            <option value="Cà phê rang xay">Cà phê rang xay</option>
           </select>
         </div>
       </div>
-      <div style={styles.productGrid}>
-        {displayedProducts.map(product => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
-      {displayedProducts.length === 0 && (
-        <p style={styles.emptyMsg}>Không tìm thấy sản phẩm nào phù hợp.</p>
+      {loading ? (
+        <p style={styles.emptyMsg}>Đang tải sản phẩm...</p>
+      ) : error ? (
+        <p style={styles.emptyMsg}>{error}</p>
+      ) : (
+        <>
+          <div style={styles.productGrid}>
+            {displayedProducts.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+          {displayedProducts.length === 0 && (
+            <p style={styles.emptyMsg}>Không tìm thấy sản phẩm nào phù hợp.</p>
+          )}
+        </>
       )}
     </div>
   );

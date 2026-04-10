@@ -1,11 +1,12 @@
 import React, { useState } from "react";
+import { API_URL } from '../apiConfig';
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = () => {
-    fetch("http://localhost:5224/api/Auth/login", {
+    fetch(`${API_URL}/Auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

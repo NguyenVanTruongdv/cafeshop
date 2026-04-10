@@ -203,12 +203,12 @@ INSERT INTO product_variant (product_id, weight, price, stock) VALUES
 -- =========================
 INSERT INTO product_image (product_id, image_url, is_main) VALUES
 -- Arabica
-(1, 'arabica_main.jpg', TRUE),
+(1, 'https://res.cloudinary.com/dbjdhcsrl/image/upload/v1775791697/ahh08zkn6mgjiltuwqmf.jpg', TRUE),
 (1, 'arabica_1.jpg', FALSE),
 (1, 'arabica_2.jpg', FALSE),
 
 -- Robusta
-(2, 'robusta_main.jpg', TRUE),
+(2, 'https://res.cloudinary.com/dbjdhcsrl/image/upload/v1775791696/qxzl38lwhw1oudmmxsh1.jpg', TRUE),
 (2, 'robusta_1.jpg', FALSE);
 
 -- =========================
