@@ -18,6 +18,7 @@ const AppRouter = () => {
   return (
     <Routes>
       <Route element={<MainLayout />}>
+        <Route index element={<TrangChu />} />
         <Route path="/" element={<TrangChu />} />
         <Route path="/san-pham" element={<SanPham />} />
         <Route path="/san-pham/:id" element={<ChiTietSanPham />} />
@@ -27,9 +28,9 @@ const AppRouter = () => {
         <Route path="/gio-hang" element={<GioHang />} />
         <Route path="/dang-nhap" element={<DangNhap />} />
         <Route path="/thanh-toan" element={<ThanhToan />} />
-       <Route path="/lich-su-don-hang" element={<LichSuDonHang />} />
-       <Route path="/lich-su-don-hang" element={<LichSuDonHang />} />
-       <Route path="/lich-su-don-hang/:id" element={<ChiTietDonHang />} />
+        <Route path="/lich-su-don-hang" element={<LichSuDonHang />} />
+        <Route path="/lich-su-don-hang/:id" element={<ChiTietDonHang />} />
+        <Route path="*" element={<TrangChu />} />
       </Route>
     </Routes>
   );

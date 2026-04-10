@@ -3,23 +3,21 @@ name: CI/CD Full
 on:
   push:
     branches:
-      - dev
+      - '**'   # 🔥 CI chạy tất cả branch
   workflow_dispatch:
 
 jobs:
-  build:
+  # ========================
+  # CI: BUILD + TEST
+  # ========================
+  ci:
     runs-on: ubuntu-latest
 
     steps:
-      # ========================
-      # 📦 CHECKOUT
-      # ========================
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ========================
-      # 🟢 FRONTEND (VITE)
-      # ========================
+      # ===== FRONTEND =====
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -33,9 +31,7 @@ jobs:
         working-directory: Frontend
         run: npm run build
 
-      # ========================
-      # 🔵 BACKEND (.NET)
-      # ========================
+      # ===== BACKEND =====
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -48,4 +44,33 @@ jobs:
         run: dotnet build Backend/CafeShopAPI/CafeShopAPI.csproj --no-restore
 
       - name: Test Backend
-        run: dotnet test Backend/CafeShopAPI/CafeShopAPI.csproj --no-build --verbosity normal
+        run: dotnet test Backend/CafeShopAPI/CafeShopAPI.csproj --no-build
+
+  # ========================
+  # CD: DEPLOY
+  # ========================
+  cd:
+    runs-on: ubuntu-latest
+    needs: ci
+
+    # 🔥 CHỈ deploy khi main
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ===== FRONTEND (VERCEL) =====
+      - name: Deploy Frontend
+        run: npx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      # ===== BACKEND (RENDER) =====
+      - name: Trigger Render Deploy
+        run: |
+          echo "Deploying Backend to Render..."
+          curl -X POST "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys" \
+          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+          -H "Accept: application/json"

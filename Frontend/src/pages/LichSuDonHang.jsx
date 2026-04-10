@@ -168,24 +168,24 @@ const LichSuDonHang = () => {
         <div style={styles.userInfo}>
           <div style={styles.avatar}>👤</div>
           <div style={styles.userDetails}>
-            <h3 style={styles.userName}>Khách Hàng VIP</h3>
-            <p style={styles.userEmail}>khachhang@gmail.com</p>
+            <h3 style={styles.userName}>{user?.name || 'Khách hàng'}</h3>
+            <p style={styles.userEmail}>{user?.email || 'email@gmail.com'}</p>
           </div>
         </div>
         <ul style={styles.menuList}>
-          <li 
+          <li
             style={{...styles.menuItem, ...(activeMenu === 'profile' ? styles.activeMenuItem : {})}}
             onClick={() => setActiveMenu('profile')}
           >
             Hồ sơ & Bảo mật
           </li>
-          <li 
+          <li
             style={{...styles.menuItem, ...(activeMenu === 'orders' ? styles.activeMenuItem : {})}}
             onClick={() => setActiveMenu('orders')}
           >
             Đơn mua
           </li>
-          <li 
+          <li
             style={{...styles.menuItem, color: '#8B0000', marginTop: '20px'}}
             onClick={handleLogout}
           >

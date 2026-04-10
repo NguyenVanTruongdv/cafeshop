@@ -1,48 +1,75 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
-const allOrders = [
-  {
-    id: "ORD-20260330-01",
-    date: "30/03/2026 14:30",
-    status: "Đã giao hàng",
-    payment: "Thanh toán khi nhận hàng (COD)",
-    total: 459000,
-    items: [
-      { name: "Cà phê nguyên chất Hạt CULI", qty: 1, price: 320000, img: "https://placehold.co/80x80/8B0000/FFF?text=Culi" },
-      { name: "Cacao Nguyên Chất", qty: 1, price: 139000, img: "https://placehold.co/80x80/4B2C20/FFF?text=Cacao" }
-    ]
-  },
-  {
-    id: "ORD-20260325-88",
-    date: "25/03/2026 09:15",
-    status: "Đang giao",
-    payment: "Chuyển khoản ngân hàng",
-    total: 370000,
-    items: [
-      { name: "Cà phê Hạt ESPRESSO BLEND 1", qty: 1, price: 370000, img: "https://placehold.co/80x80/8B0000/FFF?text=Esp1" }
-    ]
-  },
-  {
-    id: "ORD-20260320-42",
-    date: "20/03/2026 18:45",
-    status: "Chờ xác nhận",
-    payment: "Thanh toán khi nhận hàng (COD)",
-    total: 165000,
-    items: [
-      { name: "Cà phê Hạt Thượng Hạng 2", qty: 1, price: 165000, img: "https://placehold.co/80x80/4B2C20/FFF?text=TH2" }
-    ]
-  }
-];
+import React, { useParams, useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../apiConfig';
 
 const ChiTietDonHang = () => {
-  const { id } = useParams(); 
+  const { id } = useParams();
+  const { token, isAuthenticated } = useAuth();
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const currentOrder = allOrders.find(order => order.id === id);
+  useEffect(() => {
+    if (!isAuthenticated || !id) {
+      setError('Vui lòng đăng nhập để xem chi tiết đơn hàng.');
+      setLoading(false);
+      return;
+    }
 
-  if (!currentOrder) {
+    const fetchOrderDetail = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const res = await fetch(`${API_URL}/Order/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data?.message || 'Không tìm thấy đơn hàng.');
+        }
+        const data = await res.json();
+        const orderData = data?.data;
+        if (!orderData) {
+          throw new Error('Không tìm thấy dữ liệu đơn hàng.');
+        }
+        setOrder({
+          id: orderData.id,
+          date: orderData.createdDate ? new Date(orderData.createdDate).toLocaleString('vi-VN') : 'N/A',
+          status: orderData.status || 'Chờ xác nhận',
+          payment: orderData.paymentMethod || 'Chưa xác định',
+          total: orderData.totalAmount || 0,
+          items: (orderData.items ?? []).map((item) => ({
+            name: item.productName || 'Sản phẩm',
+            qty: item.quantity || 1,
+            price: item.price || 0,
+            img: 'https://placehold.co/80x80/8B0000/FFF?text=Sản+phẩm',
+          })),
+        });
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrderDetail();
+  }, [id, token, isAuthenticated]);
+
+  if (loading) {
     return (
       <div style={styles.container}>
-        <h2>Không tìm thấy đơn hàng này!</h2>
+        <h2>Đang tải chi tiết đơn hàng...</h2>
+      </div>
+    );
+  }
+
+  if (error || !order) {
+    return (
+      <div style={styles.container}>
+        <h2>Lỗi: {error}</h2>
         <Link to="/lich-su-don-hang">Quay lại danh sách</Link>
       </div>
     );
@@ -55,7 +82,7 @@ const ChiTietDonHang = () => {
           ← QUAY LẠI
         </Link>
         <span style={styles.orderIdHeader}>
-          MÃ ĐƠN HÀNG: {currentOrder.id} | <span style={{color: '#8B0000', fontWeight: 'bold'}}>{currentOrder.status.toUpperCase()}</span>
+          MÃ ĐƠN HÀNG: {order.id} | <span style={{color: '#8B0000', fontWeight: 'bold'}}>{order.status.toUpperCase()}</span>
         </span>
       </div>
 
@@ -63,20 +90,20 @@ const ChiTietDonHang = () => {
         <div style={styles.infoCol}>
           <div style={styles.infoBox}>
             <h3 style={styles.boxTitle}>Địa Chỉ Nhận Hàng</h3>
-            <p style={styles.textBold}>Khách Hàng VIP</p>
-            <p style={styles.textSub}>0901 234 567</p>
-            <p style={styles.textSub}>180 Cao Lỗ, Phường 4, Quận 8, TP. Hồ Chí Minh</p>
+            <p style={styles.textBold}>Khách Hàng</p>
+            <p style={styles.textSub}>Số điện thoại: N/A</p>
+            <p style={styles.textSub}>Địa chỉ: N/A</p>
           </div>
 
           <div style={styles.infoBox}>
             <h3 style={styles.boxTitle}>Hình Thức Thanh Toán</h3>
-            <p style={styles.textSub}>{currentOrder.payment}</p>
+            <p style={styles.textSub}>{order.payment}</p>
           </div>
         </div>
 
         <div style={styles.productCol}>
           <div style={styles.productTable}>
-            {currentOrder.items.map((item, idx) => (
+            {order.items.map((item, idx) => (
               <div key={idx} style={styles.productRow}>
                 <img src={item.img} alt={item.name} style={styles.pImg} />
                 <div style={styles.pInfo}>
@@ -93,7 +120,7 @@ const ChiTietDonHang = () => {
           <div style={styles.summaryBox}>
             <div style={styles.sumLine}>
               <span>Tổng tiền hàng:</span>
-              <span>{currentOrder.total.toLocaleString('vi-VN')}₫</span>
+              <span>{order.total.toLocaleString('vi-VN')}₫</span>
             </div>
             <div style={styles.sumLine}>
               <span>Phí vận chuyển:</span>
@@ -101,7 +128,7 @@ const ChiTietDonHang = () => {
             </div>
             <div style={{ ...styles.sumLine, marginTop: '10px' }}>
               <span style={styles.totalLabel}>Tổng cộng:</span>
-              <span style={styles.totalVal}>{currentOrder.total.toLocaleString('vi-VN')}₫</span>
+              <span style={styles.totalVal}>{order.total.toLocaleString('vi-VN')}₫</span>
             </div>
           </div>
         </div>
