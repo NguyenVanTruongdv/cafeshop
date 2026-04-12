@@ -91,8 +91,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-<<<<<<< Updated upstream
-=======
 // Database
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -115,7 +113,7 @@ builder.Services.AddHttpContextAccessor();
 
 // DTOs
 builder.Services.AddAutoMapper(typeof(MappingProfile));
->>>>>>> Stashed changes
+
 var app = builder.Build();
 
 // =======================
