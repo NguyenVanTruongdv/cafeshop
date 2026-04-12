@@ -26,7 +26,7 @@ namespace CafeShopAPI.Services
 
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, acc.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, acc.Id.ToString()),
                 new Claim("username", acc.Name ?? ""),
                 new Claim(JwtRegisteredClaimNames.Email, acc.Email ?? ""),
                 new Claim(ClaimTypes.Role, acc.Role.ToString())

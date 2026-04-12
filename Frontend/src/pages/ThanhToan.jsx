@@ -1,470 +1,352 @@
-// File: src/pages/ThanhToan.jsx
-import React, { useContext, useState } from 'react';
-import { CartContext } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { API_URL } from '../apiConfig';
+import React, { useContext, useState, useEffect } from "react";
+import { CartContext } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { API_URL } from "../apiConfig";
+import MapPicker from "../components/Map";
+
+const fetchJson = async (url, options = {}) => {
+  const res = await fetch(url, options);
+  let data = null;
+  try {
+    data = await res.json();
+  } catch {}
+  if (!res.ok) throw new Error(data?.message || `API Error: ${res.status}`);
+  return data;
+};
 
 const ThanhToan = () => {
   const { cartItems, cartTotal, clearCart } = useContext(CartContext);
-  const { user, isAuthenticated, token } = useAuth();
+  const { user, token } = useAuth();
   const navigate = useNavigate();
-  
+
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [addressInput, setAddressInput] = useState("");
+  const [selectedPosition, setSelectedPosition] = useState(null);
+  const [shippingFee, setShippingFee] = useState(0);
+  const [distance, setDistance] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [formData, setFormData] = useState({
-    fullName: '',
-    phone: '',
-    email: '',
-    address: '',
-    notes: '',
-    paymentMethod: 'COD',
-  });
+  const [error, setError] = useState("");
+  const [route, setRoute] = useState(null);
+  const [shopLocation, setShopLocation] = useState(null);
+  const [shopAddress, setShopAddress] = useState("");
 
-  const shippingFee = cartTotal > 500000 ? 0 : 30000;
-  const finalTotal = cartTotal + shippingFee;
+  useEffect(() => {
+    if (!token) return;
+    fetchJson(`${API_URL}/Address`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then((res) => setAddresses(res.data || []));
+  }, [token]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const geocodeAddress = async (input) => {
+    const query = encodeURIComponent(input + ", Vietnam");
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`,
+    );
+    const data = await res.json();
+    if (!data || data.length === 0) throw new Error("Không tìm thấy địa chỉ");
+    return {
+      lat: parseFloat(data[0].lat),
+      lng: parseFloat(data[0].lon),
+      display: data[0].display_name,
+    };
   };
 
+  const reverseGeocode = async (lat, lng) => {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+    );
+    const data = await res.json();
+
+    if (!data || !data.display_name) return "Không rõ địa chỉ";
+
+    return data.display_name;
+  };
+
+  const getRouteData = async (from, to) => {
+    const url = `https://router.project-osrm.org/route/v1/driving/${from.lng},${from.lat};${to.lng},${to.lat}?overview=full&geometries=geojson`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const route = data.routes[0];
+
+    return {
+      distance: route.distance / 1000,
+      geometry: route.geometry, // 👈 cái này để vẽ
+    };
+  };
+
+  const saveAddress = async (lat, lng, detail) => {
+    const data = await fetchJson(`${API_URL}/Address`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        addressDetail: detail,
+        latitude: lat,
+        longitude: lng,
+      }),
+    });
+    const newAddr = data.data;
+    setAddresses((prev) => [...prev, newAddr]);
+    return newAddr;
+  };
+
+  const getNearestAdmin = async (pos) => {
+    const res = await fetchJson(
+      `${API_URL}/Address/nearest-admin?lat=${pos.lat}&lng=${pos.lng}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    console.log("API RESPONSE:", res);
+
+    if (!res || !res.data) {
+      throw new Error("Không tìm thấy shop gần bạn");
+    }
+    const data = res.data;
+
+    const lat = Number(data.latitude);
+    const lng = Number(data.longitude);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      throw new Error("Toạ độ shop không hợp lệ");
+    }
+
+    return { lat, lng };
+  };
+
+  const handleAddNewAddress = async () => {
+    try {
+      if (!addressInput.trim()) return setError("Nhập địa chỉ đi 😅");
+
+      const geo = await geocodeAddress(addressInput);
+      const saved = await saveAddress(geo.lat, geo.lng, geo.display);
+
+      const pos = { lat: geo.lat, lng: geo.lng };
+
+      setSelectedAddressId(saved.id);
+      setSelectedPosition(pos);
+
+      // 🔥 gọi API shop gần nhất
+      const shop = await getNearestAdmin(pos);
+      setShopLocation(shop);
+
+      const shopAddr = await reverseGeocode(shop.lat, shop.lng);
+      setShopAddress(shopAddr);
+
+      const result = await getRouteData(shop, pos);
+
+      setDistance(result.distance);
+      setShippingFee(Math.round(result.distance * 5000));
+      setRoute(result.geometry);
+
+      setAddressInput("");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleSelectAddress = async (id) => {
+    setSelectedAddressId(id);
+
+    const addr = addresses.find((a) => a.id === Number(id));
+    if (!addr) return;
+
+    const pos = {
+      lat: Number(addr.latitude),
+      lng: Number(addr.longitude),
+    };
+
+    setSelectedPosition(pos);
+
+    const shop = await getNearestAdmin(pos);
+    setShopLocation(shop);
+
+    const shopAddr = await reverseGeocode(shop.lat, shop.lng);
+    setShopAddress(shopAddr);
+
+    const result = await getRouteData(shop, pos);
+
+    setDistance(result.distance);
+    setShippingFee(Math.round(result.distance * 5000));
+    setRoute(result.geometry);
+  };
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
-    setError('');
-
-    if (!isAuthenticated || !user) {
-      setError('Vui lòng đăng nhập để đặt hàng.');
-      navigate('/dang-nhap');
-      return;
-    }
-
-    if (!formData.fullName.trim() || !formData.phone.trim() || !formData.address.trim()) {
-      setError('Vui lòng điền đầy đủ các trường bắt buộc.');
-      return;
-    }
-
+    if (!selectedAddressId) return setError("Chọn địa chỉ trước");
     setLoading(true);
-
     try {
-      // Create address first
-      const addressRes = await fetch(`${API_URL}/Address`, {
-        method: 'POST',
+      const order = await fetchJson(`${API_URL}/Order/checkout`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          recipientName: formData.fullName,
-          phone: formData.phone,
-          email: formData.email || user.email,
-          addressLine: formData.address,
-        }),
-      });
-
-      if (!addressRes.ok) {
-        const data = await addressRes.json();
-        throw new Error(data?.message || 'Không thể tạo địa chỉ giao hàng.');
-      }
-
-      const addressData = await addressRes.json();
-      const addressId = addressData?.data?.id;
-
-      if (!addressId) {
-        throw new Error('Không nhận được ID địa chỉ từ server.');
-      }
-
-      // Create order
-      const orderRes = await fetch(`${API_URL}/Order/checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           userId: user.id,
-          addressId,
-          paymentMethod: formData.paymentMethod,
-          notes: formData.notes,
+          addressId: selectedAddressId,
+          paymentMethod: "COD",
         }),
       });
-
-      if (!orderRes.ok) {
-        const data = await orderRes.json();
-        throw new Error(data?.message || 'Không thể tạo đơn hàng.');
-      }
-
-      const orderData = await orderRes.json();
-      const orderId = orderData?.data?.id;
-
       clearCart();
-      alert('Đặt hàng thành công!');
-      navigate(`/lich-su-don-hang/${orderId}`);
+      alert("Đặt hàng thành công!");
+      navigate(`/lich-su-don-hang/${order.data.id}`);
     } catch (err) {
-      setError(err.message || 'Lỗi kết nối server. Vui lòng thử lại.');
-      console.error('Order error:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
+
+  const finalTotal = cartTotal + shippingFee;
 
   return (
     <div style={styles.container}>
       <h1 style={styles.pageTitle}>THANH TOÁN</h1>
 
       <form onSubmit={handlePlaceOrder} style={styles.checkoutWrapper}>
-        
+        {/* LEFT */}
         <div style={styles.leftCol}>
-          <h2 style={styles.sectionTitle}>THÔNG TIN THANH TOÁN</h2>
-          {error && <div style={{ color: '#d00', marginBottom: '20px', padding: '12px', backgroundColor: '#fdecea', borderRadius: '4px' }}>{error}</div>}
-          
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Họ và tên người nhận *</label>
-            <input 
-              type="text" 
-              placeholder="Nhập họ tên đầy đủ" 
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleInputChange}
-              style={styles.input} 
-              required 
-            />
-          </div>
+          <h2 style={styles.sectionTitle}>ĐỊA CHỈ GIAO HÀNG</h2>
 
-          <div style={styles.rowInput}>
-            <div style={{...styles.inputGroup, flex: 1}}>
-              <label style={styles.label}>Số điện thoại *</label>
-              <input 
-                type="tel" 
-                placeholder="Ví dụ: 0912345678" 
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                style={styles.input} 
-                required 
-              />
-            </div>
-            <div style={{...styles.inputGroup, flex: 1}}>
-              <label style={styles.label}>Địa chỉ Email</label>
-              <input 
-                type="email" 
-                placeholder="Để nhận hóa đơn" 
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                style={styles.input} 
-              />
-            </div>
-          </div>
+          {error && <div style={styles.error}>{error}</div>}
 
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Địa chỉ giao hàng chi tiết *</label>
-            <input 
-              type="text" 
-              placeholder="Số nhà, tên đường, phường/xã, quận/huyện..." 
-              name="address"
-              value={formData.address}
-              onChange={handleInputChange}
-              style={styles.input} 
-              required 
+            <input
+              placeholder="Nhập địa chỉ mới..."
+              value={addressInput}
+              onChange={(e) => setAddressInput(e.target.value)}
+              style={styles.input}
             />
+            <button
+              type="button"
+              onClick={handleAddNewAddress}
+              style={styles.smallBtn}
+            >
+              Thêm
+            </button>
           </div>
+
+          <select
+            style={styles.input}
+            onChange={(e) => handleSelectAddress(e.target.value)}
+          >
+            <option value="">-- Chọn địa chỉ --</option>
+            {addresses.map((addr) => (
+              <option key={addr.id} value={addr.id}>
+                {addr.addressDetail}
+              </option>
+            ))}
+          </select>
+
           <div style={styles.mapSection}>
-            <label style={styles.label}>📍 Chọn vị trí trên bản đồ để giao hàng chính xác hơn (Tùy chọn)</label>
-            <p style={{fontSize: '13px', color: '#666', marginBottom: '10px'}}>
-              *FE2: Thay iframe này bằng thư viện Google Maps API để khách có thể kéo thả ghim (Pin) và lấy tọa độ Latitude/Longitude lưu vào bảng Address.
-            </p>
-            <iframe 
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.954051012345!2d106.6778103!3d10.7380128!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752fad027e3727%3A0x2a77b414e887f86d!2s180%20Cao%20L%E1%BB%97%2C%20Ph%Ccedil;%E1%BB%9Dng%204%2C%20Qu%E1%BA%ADn%208%2C%20Th%C3%A0nh%20ph%E1%BB%91%20H%E1%BB%93%20Ch%C3%AD%20Minh!5e0!3m2!1svi!2s!4v1700000000000!5m2!1svi!2s" 
-              width="100%" 
-              height="250" 
-              style={{ border: 0, borderRadius: '8px' }} 
-              allowFullScreen="" 
-              loading="lazy"
-              title="Map Picker"
-            ></iframe>
+            <MapPicker
+              selectedPosition={selectedPosition}
+              savedAddresses={addresses}
+              route={route}
+              shopLocation={shopLocation}
+            />
           </div>
 
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Ghi chú đơn hàng</label>
-            <textarea 
-              placeholder="Ghi chú về giao hàng, ví dụ: Giao giờ hành chính..." 
-              name="notes"
-              value={formData.notes}
-              onChange={handleInputChange}
-              style={styles.textarea} 
-              rows="4"
-            ></textarea>
-          </div>
+          {distance !== null && (
+            <div style={styles.shipBox}>
+              🚗 {distance.toFixed(2)} km
+              <br />
+              💰 {shippingFee.toLocaleString()}đ
+              <br />
+              🏪 Shop gần nhất: {shopAddress}
+            </div>
+          )}
         </div>
 
+        {/* RIGHT */}
         <div style={styles.rightCol}>
           <div style={styles.orderBox}>
-            <h2 style={styles.sectionTitle}>ĐƠN HÀNG CỦA BẠN</h2>
-            
-            <table style={styles.orderTable}>
-              <thead>
-                <tr>
-                  <th style={styles.thLeft}>SẢN PHẨM</th>
-                  <th style={styles.thRight}>TẠM TÍNH</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cartItems.map(item => (
-                  <tr key={item.id || item.variantId}>
-                    <td style={styles.tdLeft}>
-                      {item.name} <strong style={{color: '#8B0000'}}>x {item.qty}</strong>
-                    </td>
-                    <td style={styles.tdRight}>
-                      {(item.price * item.qty).toLocaleString('vi-VN')}₫
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td style={styles.tdLeft}><strong>Tạm tính giỏ hàng</strong></td>
-                  <td style={styles.tdRight}><strong>{cartTotal.toLocaleString('vi-VN')}₫</strong></td>
-                </tr>
-                <tr>
-                  <td style={styles.tdLeft}>Giao hàng</td>
-                  <td style={styles.tdRight}>
-                    {shippingFee === 0 ? 'Miễn phí' : `${shippingFee.toLocaleString('vi-VN')}₫`}
-                  </td>
-                </tr>
-                <tr>
-                  <td style={{...styles.tdLeft, fontSize: '18px'}}><strong>TỔNG TIỀN</strong></td>
-                  <td style={{...styles.tdRight, fontSize: '20px', color: '#8B0000'}}>
-                    <strong>{finalTotal.toLocaleString('vi-VN')}₫</strong>
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-            <div style={styles.paymentMethods}>
-              <div style={styles.radioGroup}>
-                <input 
-                  type="radio" 
-                  id="cod" 
-                  name="paymentMethod" 
-                  value="COD"
-                  checked={formData.paymentMethod === 'COD'}
-                  onChange={handleInputChange}
-                  style={styles.radio} 
-                />
-                <label htmlFor="cod" style={styles.radioLabel}>Thanh toán khi nhận hàng (COD)</label>
-              </div>
-              <div style={styles.paymentDesc}>
-                Khách hàng thanh toán bằng tiền mặt khi Shipper giao hàng tới.
-              </div>
+            <h2 style={styles.sectionTitle}>ĐƠN HÀNG</h2>
 
-              <div style={styles.radioGroup}>
-                <input 
-                  type="radio" 
-                  id="bank" 
-                  name="paymentMethod" 
-                  value="BankTransfer"
-                  checked={formData.paymentMethod === 'BankTransfer'}
-                  onChange={handleInputChange}
-                  style={styles.radio} 
-                />
-                <label htmlFor="bank" style={styles.radioLabel}>Chuyển khoản ngân hàng</label>
+            {cartItems.map((item) => (
+              <div key={item.id} style={styles.itemRow}>
+                <span>
+                  {item.name} x {item.qty}
+                </span>
+                <span>{(item.price * item.qty).toLocaleString()}đ</span>
               </div>
+            ))}
+
+            <hr />
+
+            <div style={styles.itemRow}>
+              <strong>Tạm tính</strong>
+              <strong>{cartTotal.toLocaleString()}đ</strong>
             </div>
 
-            <p style={styles.policyText}>
-              Dữ liệu cá nhân của bạn sẽ được sử dụng để xử lý đơn hàng và hỗ trợ trải nghiệm trên toàn bộ trang web.
-            </p>
+            <div style={styles.itemRow}>
+              <span>Ship</span>
+              <span>{shippingFee.toLocaleString()}đ</span>
+            </div>
 
-            <button 
-              type="submit" 
-              style={{...styles.submitBtn, opacity: loading ? 0.6 : 1}}
-              disabled={loading}
-            >
-              {loading ? 'ĐANG XỬ LÝ...' : 'XÁC NHẬN ĐẶT HÀNG'}
+            <div style={{ ...styles.itemRow, fontSize: 18, color: "#8B0000" }}>
+              <strong>Tổng</strong>
+              <strong>{finalTotal.toLocaleString()}đ</strong>
+            </div>
+
+            <button type="submit" disabled={loading} style={styles.submitBtn}>
+              {loading ? "ĐANG XỬ LÝ..." : "ĐẶT HÀNG"}
             </button>
           </div>
         </div>
-
       </form>
     </div>
   );
 };
 
 const styles = {
-  container: { 
-    maxWidth: '1200px', 
-    margin: '40px auto', 
-    padding: '0 20px', 
-    backgroundColor: '#fff', 
-    minHeight: '60vh' 
-},
-  pageTitle: { 
-    fontSize: '24px', 
-    color: '#8B0000', 
-    marginBottom: '30px', 
-    textTransform: 'uppercase', 
-    borderBottom: '2px solid #8B0000', 
-    paddingBottom: '10px', 
-    display: 'inline-block' 
-},
-  
-  checkoutWrapper: { 
-    display: 'flex', 
-    flexWrap: 'wrap', 
-    gap: '40px', 
-    alignItems: 'flex-start' 
-},
-  
-  leftCol: { 
-    flex: '2 1 600px' 
-},
-  sectionTitle: { 
-    fontSize: '18px', 
-    color: '#333', 
-    marginBottom: '20px', 
-    borderBottom: '1px solid #eee', 
-    paddingBottom: '10px' 
-},
-  inputGroup: { 
-    marginBottom: '20px' 
-},
-  rowInput: { 
-    display: 'flex', 
-    gap: '20px', 
-    flexWrap: 'wrap' 
-},
-  label: { 
-    display: 'block', 
-    fontSize: '14px', 
-    color: '#333', 
-    fontWeight: 'bold', 
-    marginBottom: '8px' 
-},
-  input: { 
-    width: '100%', 
-    padding: '12px 15px', 
-    border: '1px solid #ccc', 
-    borderRadius: '4px', 
-    fontSize: '15px', 
-    outline: 'none', 
-    boxSizing: 'border-box', 
-    fontFamily: 'inherit' 
-},
-  textarea: { 
-    width: '100%', 
-    padding: '12px 15px', 
-    border: '1px solid #ccc', 
-    borderRadius: '4px', 
-    fontSize: '15px', 
-    outline: 'none',
-    boxSizing: 'border-box',
-    fontFamily: 'inherit', 
-    resize: 'vertical' 
-},
-  mapSection: { 
-    marginBottom: '25px', 
-    padding: '15px', 
-    backgroundColor: '#fcf9f2', 
-    border: '1px dashed #ccc', 
-    borderRadius: '8px' 
-},
-
-  rightCol: { 
-    flex: '1 1 400px' 
-},
-  orderBox: { 
-    border: '2px solid #8B0000', 
-    padding: '30px 20px', 
-    borderRadius: '8px', 
-    backgroundColor: '#fdfdfd' 
-},
-  orderTable: { 
-    width: '100%', 
-    borderCollapse: 'collapse', 
-    marginBottom: '20px' 
-},
-  thLeft: { 
-    textAlign: 'left', 
-    padding: '10px 0', 
-    borderBottom: '2px solid #eaeaea', 
-    color: '#333' 
-},
-  thRight: { 
-    textAlign: 'right', 
-    padding: '10px 0', 
-    borderBottom: '2px solid #eaeaea', 
-    color: '#333' 
-},
-  tdLeft: { 
-    textAlign: 'left', 
-    padding: '15px 0', 
-    borderBottom: '1px solid #eaeaea', 
-    color: '#555', 
-    fontSize: '15px' 
-},
-  tdRight: { 
-    textAlign: 'right', 
-    padding: '15px 0', 
-    borderBottom: '1px solid #eaeaea', 
-    color: '#333', 
-    fontSize: '15px' 
-},
-  
-  paymentMethods: { 
-    marginTop: '20px', 
-    marginBottom: '20px', 
-    backgroundColor: '#fff', 
-    padding: '15px', 
-    border: '1px solid #eaeaea', 
-    borderRadius: '4px'
- },
-  radioGroup: { 
-    display: 'flex', 
-    alignItems: 'center', 
-    marginBottom: '10px'
- },
-  radio: { 
-    marginRight: '10px', 
-    transform: 'scale(1.2)', 
-    accentColor: '#8B0000'
- },
-  radioLabel: { 
-    fontSize: '15px', 
-    fontWeight: 'bold', 
-    color: '#333', 
-    cursor: 'pointer' 
-},
-  paymentDesc: { 
-    padding: '10px 15px', 
-    backgroundColor: '#f5f5f5', 
-    fontSize: '14px', 
-    color: '#666', 
-    marginBottom: '15px', 
-    borderRadius: '4px', 
-    borderLeft: '3px solid #8B0000' 
-},
-  
-  policyText: { 
-    fontSize: '13px', 
-    color: '#666', 
-    lineHeight: '1.5', 
-    marginBottom: '20px'
- },
-  submitBtn: { 
-    width: '100%', 
-    backgroundColor: '#D16B4A', 
-    color: 'white', 
-    border: 'none', 
-    padding: '16px', 
-    fontSize: '16px', 
-    fontWeight: 'bold', 
-    cursor: 'pointer', 
-    borderRadius: '4px', 
-    transition: 'background-color 0.3s'
- }
+  container: { maxWidth: 1200, margin: "40px auto", padding: 20 },
+  pageTitle: { fontSize: 24, color: "#8B0000", marginBottom: 20 },
+  checkoutWrapper: { display: "flex", gap: 30, flexWrap: "wrap" },
+  leftCol: { flex: 2 },
+  rightCol: { flex: 1 },
+  sectionTitle: { marginBottom: 15 },
+  inputGroup: { display: "flex", gap: 10, marginBottom: 15 },
+  input: {
+    padding: 10,
+    border: "1px solid #ccc",
+    borderRadius: 4,
+    width: "100%",
+  },
+  smallBtn: {
+    padding: "10px 15px",
+    background: "#8B0000",
+    color: "#fff",
+    border: "none",
+  },
+  mapSection: {
+    height: 400,
+    marginTop: 15,
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  shipBox: { marginTop: 10, padding: 10, background: "#f5f5f5" },
+  orderBox: { border: "1px solid #ddd", padding: 20 },
+  itemRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  submitBtn: {
+    width: "100%",
+    padding: 15,
+    background: "#D16B4A",
+    color: "#fff",
+    border: "none",
+  },
+  error: { color: "red", marginBottom: 10 },
 };
 
 export default ThanhToan;

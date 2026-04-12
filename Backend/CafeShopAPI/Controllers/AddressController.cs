@@ -66,5 +66,16 @@ namespace CafeShopAPI.Controllers
             return Ok(result);
         }
 
+        [HttpGet("nearest-admin")]
+        [Authorize]
+        public async Task<IActionResult> GetNearestAdmin(double lat, double lng)
+        {
+            var result = await _service.GetNearestAdmin(lat, lng);
+
+            if (result == null)
+                return NotFound("Không tìm thấy shop");
+
+            return Ok(result);
+        }
     }
 }

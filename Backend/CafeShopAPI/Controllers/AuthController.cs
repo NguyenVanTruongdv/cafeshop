@@ -1,6 +1,8 @@
 ﻿using CafeShopAPI.DTOs;
 using CafeShopAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using static CafeShopAPI.DTOs.AuthDto;
 
 namespace CafeShopAPI.Controllers
@@ -38,6 +40,7 @@ namespace CafeShopAPI.Controllers
         }
 
         [HttpPut("reset-password")]
+        [Authorize]
         public async Task<IActionResult> ResetPassword(ResetPasswordRequest re)
         {
             var result = await _authService.resetPassword(re);

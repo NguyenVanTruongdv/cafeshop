@@ -91,6 +91,31 @@ builder.Services.AddCors(options =>
     });
 });
 
+<<<<<<< Updated upstream
+=======
+// Database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+// DI Services
+builder.Services.AddScoped<CategoryService>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<ProductVariantService>();
+builder.Services.AddScoped<ProductImageService>();
+
+
+// builder.Services.AddScoped<DanhMucService>();
+// builder.Services.AddScoped<SanPhamService>();
+builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<AddressService>();
+builder.Services.AddHttpContextAccessor();
+
+// DTOs
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+>>>>>>> Stashed changes
 var app = builder.Build();
 
 // =======================

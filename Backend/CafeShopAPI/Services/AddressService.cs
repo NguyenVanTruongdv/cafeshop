@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using CafeShopAPI.Data;
 using CafeShopAPI.DTOs;
+using CafeShopAPI.Enums;
 using CafeShopAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -149,6 +150,74 @@ namespace CafeShopAPI.Services
             {
                 Message = "Địa chỉ đã được xóa",
                 Data = _mapper.Map<AddressResponse>(address)
+            };
+        }
+
+        private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+        {
+            const double R = 6371; // km
+
+            var dLat = ToRadians(lat2 - lat1);
+            var dLon = ToRadians(lon2 - lon1);
+
+            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                    Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
+                    Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+
+            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+            return R * c;
+        }
+
+        private double ToRadians(double angle)
+        {
+            return angle * Math.PI / 180;
+        }
+        public async Task<ApiDtoResponse<AddressResponse>> GetNearestAdmin(double lat, double lng)
+        {
+            var adminAddresses = await _context.Addresses
+                .Where(a => a.User.Role == UserRole.Admin)
+                .ToListAsync();
+
+            if (!adminAddresses.Any())
+            {
+                return new ApiDtoResponse<AddressResponse>
+                {
+                    Message = "Không tìm thấy địa chỉ admin"
+                };
+            }
+
+            Address nearest = null;
+            double minDistance = double.MaxValue;
+
+            foreach (var addr in adminAddresses)
+            {
+                double distance = CalculateDistance(
+                    lat, lng,
+                    (double)addr.Latitude,
+                    (double)addr.Longitude
+                );
+
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    nearest = addr;
+                }
+            }
+
+            // map sang DTO
+            var result = new AddressResponse
+            {
+                Id = nearest.Id,
+                AddressDetail = nearest.AddressDetail,
+                Latitude = nearest.Latitude ?? 0.0,
+                Longitude = nearest.Longitude ?? 0.0
+            };
+
+            return new ApiDtoResponse<AddressResponse>
+            {
+                Message = "Lấy địa chỉ shop gần nhất thành công",
+                Data = result
             };
         }
     }
