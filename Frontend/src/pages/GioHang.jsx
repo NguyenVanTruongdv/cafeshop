@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const GioHang = () => {
   const { cartItems, cartTotal, updateItemQuantity, removeItem, loadCart, loading, error } = useContext(CartContext);
@@ -69,8 +70,16 @@ const GioHang = () => {
                       </td>
                       <td style={styles.tdCenter}>
                         <img
-                          src={item.image || 'https://placehold.co/80x80/8B0000/FFF?text=No+Image'}
-                          alt={item.productName || 'Sản phẩm'}
+                          src={
+                            resolveImageUrl(
+                              item.image ||
+                                item.urlImgMain ||
+                                item.imageUrl ||
+                                item.ImageUrl ||
+                                ''
+                            ) || 'https://placehold.co/80x80/8B0000/FFF?text=No+Image'
+                          }
+                          alt={item.productName || item.name || 'Sản phẩm'}
                           style={styles.productImg}
                         />
                       </td>

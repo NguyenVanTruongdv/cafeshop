@@ -1,13 +1,51 @@
 import { API_URL } from '../apiConfig.js';
 
 // Helper function to get auth headers
-const getAuthHeaders = () => {
+const getAuthHeaders = (isFormData = false) => {
   const token = localStorage.getItem('token');
-  return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+  const headers = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
+  return headers;
+};
+
+const parseResponseBody = async (response) => {
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    return response.json();
+  }
+
+  const text = await response.text();
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+
+const handleResponse = async (response) => {
+  const payload = await parseResponseBody(response);
+  if (!response.ok) {
+    const message =
+      (typeof payload === 'string' && payload) ||
+      payload?.message ||
+      payload?.title ||
+      `Request failed with status ${response.status}`;
+    throw new Error(message);
+  }
+  return payload;
 };
 
 // Auth APIs
-export const login = async (credentials) => {
+export const dangnhap = async (credentials) => {
   const response = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -16,7 +54,7 @@ export const login = async (credentials) => {
   return response.json();
 };
 
-export const register = async (userData) => {
+export const dangky = async (userData) => {
   const response = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -25,7 +63,7 @@ export const register = async (userData) => {
   return response.json();
 };
 
-export const resetPassword = async (data) => {
+export const datlaimatkhau = async (data) => {
   const response = await fetch(`${API_URL}/auth/reset-password`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -34,22 +72,22 @@ export const resetPassword = async (data) => {
   return response.json();
 };
 
-// User APIs
-export const getAllUsers = async () => {
+// User APIs (Admin)
+export const laytatcauser = async () => {
   const response = await fetch(`${API_URL}/user/admin`, {
     headers: getAuthHeaders(),
   });
   return response.json();
 };
 
-export const getUserById = async (id) => {
+export const layuserbyid = async (id) => {
   const response = await fetch(`${API_URL}/user/admin/${id}`, {
     headers: getAuthHeaders(),
   });
   return response.json();
 };
 
-export const updateUser = async (userData) => {
+export const capnhatuser = async (userData) => {
   const response = await fetch(`${API_URL}/user`, {
     method: 'PUT',
     headers: getAuthHeaders(),
@@ -58,7 +96,7 @@ export const updateUser = async (userData) => {
   return response.json();
 };
 
-export const deleteUser = async (id) => {
+export const xoauserv = async (id) => {
   const response = await fetch(`${API_URL}/user/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
@@ -67,56 +105,56 @@ export const deleteUser = async (id) => {
 };
 
 // Product APIs
-export const getProducts = async (name = '') => {
+export const laysanpham = async (name = '') => {
   const url = name ? `${API_URL}/products?name=${encodeURIComponent(name)}` : `${API_URL}/products`;
   const response = await fetch(url);
   return response.json();
 };
 
-export const getProductById = async (id) => {
+export const laysanphambyid = async (id) => {
   const response = await fetch(`${API_URL}/products/${id}`);
   return response.json();
 };
 
-export const createProduct = async (formData) => {
+export const taosanpham = async (formData) => {
   const response = await fetch(`${API_URL}/products`, {
     method: 'POST',
-    headers: getAuthHeaders(), // Assuming auth required, adjust if not
-    body: formData, // FormData for file uploads
+    headers: getAuthHeaders(true),
+    body: formData,
   });
-  return response.json();
+  return handleResponse(response);
 };
 
-export const updateProduct = async (id, formData) => {
+export const capnhatsanpham = async (id, productData) => {
   const response = await fetch(`${API_URL}/products/${id}`, {
     method: 'PUT',
     headers: getAuthHeaders(),
-    body: formData,
+    body: JSON.stringify(productData),
   });
-  return response.json();
+  return handleResponse(response);
 };
 
-export const deleteProduct = async (id) => {
+export const xoasanpham = async (id) => {
   const response = await fetch(`${API_URL}/products/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
   });
-  return response.json();
+  return handleResponse(response);
 };
 
 // Category APIs
-export const getCategories = async (name = '') => {
+export const laydanhmuc = async (name = '') => {
   const url = name ? `${API_URL}/categories?name=${encodeURIComponent(name)}` : `${API_URL}/categories`;
   const response = await fetch(url);
   return response.json();
 };
 
-export const getCategoryById = async (id) => {
+export const laydanhmucbyid = async (id) => {
   const response = await fetch(`${API_URL}/categories/${id}`);
   return response.json();
 };
 
-export const createCategory = async (categoryData) => {
+export const taodanhmuc = async (categoryData) => {
   const response = await fetch(`${API_URL}/categories`, {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -125,7 +163,7 @@ export const createCategory = async (categoryData) => {
   return response.json();
 };
 
-export const updateCategory = async (id, categoryData) => {
+export const capnhatdanhmuc = async (id, categoryData) => {
   const response = await fetch(`${API_URL}/categories/${id}`, {
     method: 'PUT',
     headers: getAuthHeaders(),
@@ -134,7 +172,7 @@ export const updateCategory = async (id, categoryData) => {
   return response.json();
 };
 
-export const deleteCategory = async (id) => {
+export const xoadanhmuc = async (id) => {
   const response = await fetch(`${API_URL}/categories/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
@@ -142,15 +180,15 @@ export const deleteCategory = async (id) => {
   return response.json();
 };
 
-// Cart APIs
-export const getCartByUserId = async (userId) => {
+// Cart APIs (Client)
+export const laygiohangbyuserid = async (userId) => {
   const response = await fetch(`${API_URL}/cart/user/${userId}`, {
     headers: getAuthHeaders(),
   });
   return response.json();
 };
 
-export const addCartItem = async (itemData) => {
+export const themitemvaogiohang = async (itemData) => {
   const response = await fetch(`${API_URL}/cart/add-item`, {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -159,7 +197,7 @@ export const addCartItem = async (itemData) => {
   return response.json();
 };
 
-export const updateCartItem = async (itemData) => {
+export const capnhatitemgiohang = async (itemData) => {
   const response = await fetch(`${API_URL}/cart/update-item`, {
     method: 'PUT',
     headers: getAuthHeaders(),
@@ -168,7 +206,7 @@ export const updateCartItem = async (itemData) => {
   return response.json();
 };
 
-export const removeCartItem = async (cartItemId) => {
+export const xoaitemgiohang = async (cartItemId) => {
   const response = await fetch(`${API_URL}/cart/remove-item/${cartItemId}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
@@ -177,47 +215,47 @@ export const removeCartItem = async (cartItemId) => {
 };
 
 // Order APIs
-export const getOrderById = async (orderId) => {
+export const laydonhangbyid = async (orderId) => {
   const response = await fetch(`${API_URL}/order/${orderId}`, {
     headers: getAuthHeaders(),
   });
   return response.json();
 };
 
-export const getOrdersByUser = async (userId) => {
+export const laydonhangbyuser = async (userId) => {
   const response = await fetch(`${API_URL}/order/user/${userId}`, {
     headers: getAuthHeaders(),
   });
   return response.json();
 };
 
-export const checkoutOrder = async (orderData) => {
+export const thanhtoandonhang = async (orderData) => {
   const response = await fetch(`${API_URL}/order/checkout`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(orderData),
   });
-  return response.json();
+  return handleResponse(response);
 };
 
 // Address APIs
-export const createAddress = async (addressData) => {
+export const taodiachi = async (addressData) => {
   const response = await fetch(`${API_URL}/address`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(addressData),
   });
-  return response.json();
+  return handleResponse(response);
 };
 
-export const getMyAddresses = async () => {
+export const laydiachicuatoi = async () => {
   const response = await fetch(`${API_URL}/address`, {
     headers: getAuthHeaders(),
   });
   return response.json();
 };
 
-export const updateAddress = async (id, addressData) => {
+export const capnhatdiachi = async (id, addressData) => {
   const response = await fetch(`${API_URL}/address/${id}`, {
     method: 'PUT',
     headers: getAuthHeaders(),
@@ -226,7 +264,7 @@ export const updateAddress = async (id, addressData) => {
   return response.json();
 };
 
-export const deleteAddress = async (id) => {
+export const xoadichi = async (id) => {
   const response = await fetch(`${API_URL}/address/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
@@ -234,14 +272,14 @@ export const deleteAddress = async (id) => {
   return response.json();
 };
 
-export const getAllAddresses = async () => {
+export const laytatcadiachi = async () => {
   const response = await fetch(`${API_URL}/address/address-all`, {
     headers: getAuthHeaders(),
   });
   return response.json();
 };
 
-export const deleteAddressAdmin = async (id) => {
+export const xoadichiadmin = async (id) => {
   const response = await fetch(`${API_URL}/address/admin-delete/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
@@ -250,80 +288,80 @@ export const deleteAddressAdmin = async (id) => {
 };
 
 // Product Image APIs
-export const getProductImages = async (productId) => {
+export const layanhsanpham = async (productId) => {
   const response = await fetch(`${API_URL}/products/${productId}/images`);
   return response.json();
 };
 
-export const uploadProductImages = async (productId, formData) => {
+export const uploadanhsanpham = async (productId, formData) => {
   const response = await fetch(`${API_URL}/products/${productId}/images`, {
     method: 'POST',
-    headers: getAuthHeaders(), // Adjust if auth not needed
+    headers: getAuthHeaders(true),
     body: formData,
   });
-  return response.json();
+  return handleResponse(response);
 };
 
-export const updateProductImage = async (imageId, file) => {
+export const capnhatanhsanpham = async (imageId, file) => {
   const formData = new FormData();
   formData.append('file', file);
   const response = await fetch(`${API_URL}/products/${imageId}`, {
     method: 'PUT',
-    headers: getAuthHeaders(),
+    headers: getAuthHeaders(true),
     body: formData,
   });
   return response.json();
 };
 
-export const deleteProductImage = async (imageId) => {
+export const xoaanhsanpham = async (imageId) => {
   const response = await fetch(`${API_URL}/products/images/${imageId}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
   });
-  return response.json();
+  return handleResponse(response);
 };
 
-export const setMainImage = async (productId, imageId) => {
+export const datanhchinh = async (productId, imageId) => {
   const response = await fetch(`${API_URL}/products/${productId}/images/${imageId}/set-main`, {
     method: 'PUT',
     headers: getAuthHeaders(),
   });
-  return response.json();
+  return handleResponse(response);
 };
 
 // Product Variant APIs
-export const getProductVariants = async () => {
+export const laybienthesanpham = async () => {
   const response = await fetch(`${API_URL}/productvairants`); // Note: typo in backend route
   return response.json();
 };
 
-export const getProductVariantById = async (id) => {
+export const laybienthesanphambyid = async (id) => {
   const response = await fetch(`${API_URL}/productvairants/${id}`);
   return response.json();
 };
 
-export const createProductVariant = async (variantData) => {
+export const taobienthesanpham = async (variantData) => {
   const response = await fetch(`${API_URL}/productvairants`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(variantData),
   });
-  return response.json();
+  return handleResponse(response);
 };
 
-export const updateProductVariant = async (id, variantData) => {
+export const capnhatbienthesanpham = async (id, variantData) => {
   const response = await fetch(`${API_URL}/productvairants/${id}`, {
     method: 'PUT',
     headers: getAuthHeaders(),
     body: JSON.stringify(variantData),
   });
-  return response.json();
+  return handleResponse(response);
 };
 
-export const deleteProductVariant = async (id) => {
+export const xoabienthesanpham = async (id) => {
   const response = await fetch(`${API_URL}/productvairants/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
   });
-  return response.json();
+  return handleResponse(response);
 };

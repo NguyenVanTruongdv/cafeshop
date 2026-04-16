@@ -1,0 +1,25 @@
+.products-page,
+.products-page * {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif !important;
+}
+
+.product-admin-table__thumb {
+  width: 76px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid rgba(117, 82, 52, 0.12);
+  background: rgba(255, 248, 239, 0.8);
+}
+
+.product-admin-table__thumb--placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.product-admin-table__description {
+  max-width: 340px;
+  color: var(--muted);
+}

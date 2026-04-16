@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { login as apiLogin, register as apiRegister } from '../services/api';
+import { dangnhap as apiLogin, dangky as apiRegister } from '../services/api';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -14,12 +14,24 @@ const Auth = () => {
   const [message, setMessage] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     const mode = searchParams.get('mode');
     setIsLogin(mode !== 'register');
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    if (user?.role === 'Admin') {
+      navigate('/admin');
+    } else {
+      navigate('/');
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const toggleMode = () => {
     setMessage('');
@@ -52,7 +64,7 @@ const Auth = () => {
         setSuccess('Đăng nhập thành công!');
         setMessage('');
         setTimeout(() => {
-          navigate('/');
+          navigate(data.data.user.role === 'Admin' ? '/admin' : '/');
         }, 800);
       } catch (error) {
         setMessage('Lỗi kết nối server. Vui lòng thử lại.');

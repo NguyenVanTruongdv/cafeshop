@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
-import { getProductById, getProductImages } from '../services/api';
+import { laysanphambyid, layanhsanpham } from '../services/api';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const ChiTietSanPham = () => {
   const { id } = useParams();
@@ -18,9 +19,14 @@ const ChiTietSanPham = () => {
       setLoading(true);
       setError('');
       try {
-        const productData = await getProductById(id);
-        const imagesData = await getProductImages(id);
+
+        const productRes = await laysanphambyid(id);
+        const imagesRes = await layanhsanpham(id);
+        const productData = productRes?.data || productRes || {};
+        const imagesData = imagesRes?.data || imagesRes || [];
+
         const variantsList = productData.variants || productData.Variants || [];
+        
         const normalizedProduct = {
           ...productData,
           Variants: variantsList,
@@ -51,9 +57,14 @@ const ChiTietSanPham = () => {
   if (!product) {
     return <h2 style={{ textAlign: 'center', marginTop: '50px' }}>Sản phẩm không tồn tại!</h2>;
   }
-  const imageSrc = product.urlImgMain || product.Images?.[0]?.imageUrl || 'https://placehold.co/500x500/8B0000/FFF?text=Hinh+Anh+Loi';
+
+
+  const imageSrc =
+    resolveImageUrl(product.urlImgMain || product.Images?.[0]?.imageUrl || product.Images?.[0]?.ImageUrl) ||
+    'https://placehold.co/500x500/8B0000/FFF?text=Hinh+Anh+Loi';
   const price = selectedVariant?.price ?? 0;
   const type = product.categoryName || 'Sản phẩm';
+  
   const stock = selectedVariant?.stock ?? 0;
 
   return (
@@ -71,7 +82,7 @@ const ChiTietSanPham = () => {
             {(product.Images || []).map((img, index) => (
               <img
                 key={index}
-                src={img.imageUrl || img.ImageUrl || imageSrc}
+                src={resolveImageUrl(img.imageUrl || img.ImageUrl) || imageSrc}
                 alt={`thumb${index + 1}`}
                 style={styles.thumbnail}
                 onError={(e) => { e.target.src = 'https://placehold.co/100x100/8B0000/FFF?text=Loi'; }}

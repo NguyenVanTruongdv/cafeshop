@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { getCartByUserId, addCartItem, updateCartItem, removeCartItem } from '../services/api';
+import { laygiohangbyuserid, themitemvaogiohang, capnhatitemgiohang, xoaitemgiohang, laysanpham } from '../services/api';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 export const CartContext = createContext();
 
@@ -14,14 +15,17 @@ const getStoredCart = () => {
   }
 };
 
-const mapCartItemResponse = (item) => ({
-  id: item.id ?? item.Id,
-  variantId: item.variantId ?? item.VariantId ?? item.VariantID,
-  qty: item.quantity ?? item.Quantity ?? item.qty ?? 1,
-  price: Number(item.price ?? item.Price ?? 0),
-  name: item.productName ?? item.ProductName ?? item.name ?? 'Sản phẩm',
-  image: item.image ?? item.urlImgMain ?? item.imageUrl ?? item.ImageUrl ?? ''
-});
+const mapCartItemResponse = (item) => {
+  const rawImage = item.image ?? item.urlImgMain ?? item.imageUrl ?? item.ImageUrl ?? '';
+  return {
+    id: item.id ?? item.Id,
+    variantId: item.variantId ?? item.VariantId ?? item.VariantID,
+    qty: item.quantity ?? item.Quantity ?? item.qty ?? 1,
+    price: Number(item.price ?? item.Price ?? 0),
+    name: item.productName ?? item.ProductName ?? item.name ?? 'Sản phẩm',
+    image: resolveImageUrl(rawImage),
+  };
+};
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(getStoredCart);
@@ -43,8 +47,68 @@ export const CartProvider = ({ children }) => {
     setLoading(true);
     setError('');
     try {
-      const data = await getCartByUserId(user.id);
-      const items = (data?.data?.cartItems ?? []).map(mapCartItemResponse);
+      // Lấy giỏ hàng từ backend
+      const data = await laygiohangbyuserid(user.id);
+      let items = (data?.data?.cartItems ?? []).map(mapCartItemResponse);
+      
+      // Nếu không có items, return ngay
+      if (items.length === 0) {
+        setCartItems(items);
+        return;
+      }
+      
+      // Fetch danh sách tất cả sản phẩm để lấy ảnh
+      try {
+        const productsRes = await laysanpham();
+        const products = Array.isArray(productsRes) ? productsRes : productsRes?.data || [];
+        
+        const productImageMap = {};
+        const variantImageMap = {};
+
+        products.forEach(product => {
+          const imageSource =
+            product.urlImgMain ||
+            product.image ||
+            product.imageUrl ||
+            product.ImageUrl ||
+            product.Images?.[0]?.imageUrl ||
+            product.Images?.[0]?.ImageUrl ||
+            product.images?.[0]?.imageUrl ||
+            product.images?.[0]?.ImageUrl ||
+            '';
+          const resolved = resolveImageUrl(imageSource);
+          if (resolved) {
+            if (product.id != null) {
+              productImageMap[product.id] = resolved;
+            }
+            if (product.name) {
+              productImageMap[product.name] = resolved;
+            }
+          }
+
+          const variants = product.Variants || product.variants || [];
+          variants.forEach((variant) => {
+            if (variant?.id != null && resolved) {
+              variantImageMap[variant.id] = resolved;
+            }
+          });
+        });
+        
+        items = items.map(item => ({
+          ...item,
+          image:
+            item.image ||
+            variantImageMap[item.variantId] ||
+            productImageMap[item.productId] ||
+            productImageMap[item.id] ||
+            productImageMap[item.name] ||
+            ''
+        }));
+      } catch (imgErr) {
+        console.warn('Failed to fetch product images:', imgErr);
+        // Nếu lỗi fetch ảnh, vẫn return items (ảnh sẽ là empty)
+      }
+      
       setCartItems(items);
     } catch (err) {
       setError(err.message);
@@ -65,19 +129,25 @@ export const CartProvider = ({ children }) => {
     if (isAuthenticated && user) {
       const variantId = product.variantId ?? product.Variants?.[0]?.id ?? product.variantID ?? product.id;
       try {
-        const response = await addCartItem({
+        const response = await themitemvaogiohang({
           userId: user.id,
           variantId,
           quantity,
         });
         if (response?.data) {
-          const item = mapCartItemResponse(response.data);
+          let item = mapCartItemResponse(response.data);
+          
+          // Nếu backend không gửi ảnh, lấy từ product param
+          if (!item.image && product.image) {
+            item = { ...item, image: product.image };
+          }
+          
           setCartItems((prev) => {
             const existing = prev.find((x) => x.id === item.id || x.variantId === item.variantId);
             if (existing) {
               return prev.map((x) =>
                 x.id === existing.id || x.variantId === existing.variantId
-                  ? { ...x, qty: item.qty, price: item.price, name: item.name, image: item.image }
+                  ? { ...x, qty: item.qty, price: item.price, name: item.name, image: item.image || x.image }
                   : x
               );
             }
@@ -123,7 +193,7 @@ export const CartProvider = ({ children }) => {
     if (newQuantity < 1) return removeItem(cartItemId);
     setCartItems((prev) =>
       prev.map((item) =>
-        item.id === cartItemId || item.variantId === cartItemId
+        item.id === cartItemId
           ? { ...item, qty: newQuantity, quantity: newQuantity }
           : item
       )
@@ -131,12 +201,14 @@ export const CartProvider = ({ children }) => {
     
     if (isAuthenticated && user) {
       try {
-        const response = await updateCartItem({ cartItemId, quantity: newQuantity });
+
+        const response = await capnhatitemgiohang({ cartItemId, quantity: newQuantity });
+        // Nếu API trả về data khác, update lại
         if (response?.data) {
           const updated = mapCartItemResponse(response.data);
           setCartItems((prev) =>
             prev.map((item) =>
-              item.id === cartItemId || item.variantId === cartItemId
+              item.id === cartItemId
                 ? {
                     ...item,
                     qty: updated.qty,
@@ -155,11 +227,13 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeItem = async (cartItemId) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== cartItemId && item.variantId !== cartItemId));
+
+    setCartItems((prev) => prev.filter((item) => item.id !== cartItemId));
+
     
     if (isAuthenticated && user) {
       try {
-        await removeCartItem(cartItemId);
+        await xoaitemgiohang(cartItemId);
       } catch (err) {
         setError(err.message);
         loadCart();

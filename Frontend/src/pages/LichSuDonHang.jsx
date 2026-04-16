@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getOrdersByUser } from '../services/api';
+import { laydonhangbyuser } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const tabs = ['Tất cả', 'Chờ xác nhận', 'Đang giao', 'Đã giao', 'Đã hủy'];
 
@@ -25,8 +26,37 @@ const LichSuDonHang = () => {
       setLoading(true);
       setError('');
       try {
-        const data = await getOrdersByUser(user.id);
-        setOrders(data?.data || []);
+        const response = await laydonhangbyuser(user.id);
+        const rawOrders = response?.data || [];
+
+        const statusMap = {
+          Pending: 'Chờ xác nhận',
+          Shipping: 'Đang giao',
+          Completed: 'Đã giao',
+          Cancelled: 'Đã hủy'
+        };
+
+        const mappedOrders = rawOrders.map((o) => {
+          const statusCode = o.status || 'Pending';
+          const statusLabel = statusMap[statusCode] || statusCode;
+
+          return {
+            id: o.id,
+            statusCode,
+            statusLabel,
+            total: o.totalAmount || 0,
+            items: (o.items || []).map((item) => ({
+              name: item.productName || 'Sản phẩm',
+              qty: item.quantity || 1,
+              price: item.price || 0,
+              img:
+                resolveImageUrl(item.imagePath) ||
+                'https://placehold.co/80x80/8B0000/FFF?text=Sản+phẩm'
+            }))
+          };
+        });
+
+        setOrders(mappedOrders);
       } catch (err) {
         console.error(err);
         setError('Không thể tải lịch sử đơn hàng.');
@@ -38,9 +68,10 @@ const LichSuDonHang = () => {
   }, [user]);
 
   // Logic lọc đơn hàng
-  const filteredOrders = activeTab === 'Tất cả' 
-    ? orders 
-    : orders.filter(order => order.status === activeTab);
+  const filteredOrders =
+    activeTab === 'Tất cả'
+      ? orders
+      : orders.filter((order) => order.statusLabel === activeTab);
 
   // Hàm xử lý đăng xuất
   const handleLogout = () => {
@@ -128,7 +159,7 @@ const LichSuDonHang = () => {
             <div key={order.id} style={styles.orderCard}>
               <div style={styles.orderHeader}>
                 <span style={styles.orderId}>Mã đơn: <strong>{order.id}</strong></span>
-                <span style={styles.orderStatus}>{order.status.toUpperCase()}</span>
+                <span style={styles.orderStatus}>{order.statusLabel.toUpperCase()}</span>
               </div>
               <div style={styles.orderBody}>
                 {order.items.map((item, index) => (

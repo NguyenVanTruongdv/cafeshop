@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { getProductVariants } from '../services/api';
+import { laybienthesanpham } from '../services/api';
 
 const BangGia = () => {
   const [variants, setVariants] = useState([]);
@@ -12,7 +12,7 @@ const BangGia = () => {
       setLoading(true);
       setError('');
       try {
-        const data = await getProductVariants();
+        const data = await laybienthesanpham();
         setVariants(data || []);
       } catch (err) {
         console.error(err);

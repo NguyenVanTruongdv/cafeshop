@@ -14,6 +14,17 @@ import DangNhap from '../pages/DangNhap';
 import ThanhToan from '../pages/ThanhToan';
 import LichSuDonHang from '../pages/LichSuDonHang';
 import ChiTietDonHang from '../pages/ChiTietDonHang';
+
+// Admin Pages
+import AdminLayout from '../admin/components/Layout.jsx';
+import AdminDashboard from '../admin/pages/Dashboard.jsx';
+import AdminUsers from '../admin/pages/Users.jsx';
+import AdminCategories from '../admin/pages/Categories.jsx';
+import AdminProducts from '../admin/pages/Products.jsx';
+import AdminProductDetail from '../admin/pages/ProductDetail.jsx';
+import AdminOrders from '../admin/pages/Orders.jsx';
+import AdminOrderDetail from '../admin/pages/OrderDetail.jsx';
+
 const AppRouter = () => {
   return (
     <Routes>
@@ -31,6 +42,15 @@ const AppRouter = () => {
         <Route path="/lich-su-don-hang" element={<LichSuDonHang />} />
         <Route path="/lich-su-don-hang/:id" element={<ChiTietDonHang />} />
         <Route path="*" element={<TrangChu />} />
+      </Route>
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="categories" element={<AdminCategories />} />
+        <Route path="products" element={<AdminProducts />} />
+        <Route path="products/:id" element={<AdminProductDetail />} />
+        <Route path="orders" element={<AdminOrders />} />
+        <Route path="orders/:id" element={<AdminOrderDetail />} />
       </Route>
     </Routes>
   );

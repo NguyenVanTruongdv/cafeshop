@@ -3,7 +3,7 @@ import React, { useContext, useState } from 'react';
 import { CartContext } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { createAddress, checkoutOrder } from '../services/api';
+import { taodiachi, thanhtoandonhang } from '../services/api';
 
 const ThanhToan = () => {
   const { cartItems, cartTotal, clearCart } = useContext(CartContext);
@@ -50,19 +50,20 @@ const ThanhToan = () => {
     setLoading(true);
 
     try {
-      const addressData = await createAddress({
-        recipientName: formData.fullName,
-        phone: formData.phone,
-        email: formData.email || user.email,
-        addressLine: formData.address,
+
+      const addressData = await taodiachi({
+        addressDetail: formData.address,
+        latitude: 0,
+        longitude: 0,
       });
 
-      const addressId = addressData?.data?.id;
-
+      const addressId = addressData?.data?.id ?? addressData?.data?.Id;
       if (!addressId) {
-        throw new Error('Không nhận được ID địa chỉ từ server.');
+        throw new Error(addressData?.message || 'Không nhận được ID địa chỉ từ server.');
       }
-      const orderData = await checkoutOrder({
+
+      // Create order
+      const orderData = await thanhtoandonhang({
         userId: user.id,
         addressId,
         paymentMethod: formData.paymentMethod,

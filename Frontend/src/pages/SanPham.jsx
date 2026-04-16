@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ProductCard from '../components/ProductCard';
-import { getProducts } from '../services/api';
+import { laysanpham } from '../services/api';
 
 const SanPham = () => {
   const [products, setProducts] = useState([]);
@@ -13,7 +13,7 @@ const SanPham = () => {
       setLoading(true);
       setError('');
       try {
-        const data = await getProducts();
+        const data = await laysanpham();
         setProducts(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);

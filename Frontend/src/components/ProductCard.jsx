@@ -1,13 +1,15 @@
 import React, { useContext, useState } from 'react'; 
 import { Link } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useContext(CartContext);
   const [isHovered, setIsHovered] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  
-  const imageUrl = product.urlImgMain || product.image || 'https://placehold.co/300x300/8B0000/FFF?text=Hinh+Anh+Loi';
+
+  const imageUrl =
+    resolveImageUrl(product.urlImgMain || product.image || product.imageUrl || product.ImageUrl) ||
+    'https://placehold.co/300x300/8B0000/FFF?text=Hinh+Anh+Loi';
   const price = product.price ?? product.Variants?.[0]?.price ?? 0;
   const type = product.type || product.categoryName || 'Sản phẩm';
   const variantId = product.variantId ?? product.Variants?.[0]?.id ?? product.id;
