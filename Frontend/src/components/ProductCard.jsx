@@ -6,6 +6,7 @@ import { resolveImageUrl } from '../utils/imageUrl';
 const ProductCard = ({ product }) => {
   const { addToCart } = useContext(CartContext);
   const [isHovered, setIsHovered] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   const imageUrl =
     resolveImageUrl(product.urlImgMain || product.image || product.imageUrl || product.ImageUrl) ||
