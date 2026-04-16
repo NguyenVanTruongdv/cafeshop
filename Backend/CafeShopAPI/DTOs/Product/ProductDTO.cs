@@ -14,6 +14,6 @@ public  class ProductDTO
 
     public string? urlImgMain {get; set;}
 
-    
+    public decimal? Price { get; set; }
 
 }

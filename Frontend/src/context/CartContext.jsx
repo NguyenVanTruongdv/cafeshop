@@ -1,7 +1,7 @@
 // File: src/context/CartContext.jsx
 import React, { createContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { API_URL } from '../apiConfig';
+import { getCartByUserId, addCartItem, updateCartItem, removeCartItem } from '../services/api';
 
 export const CartContext = createContext();
 
@@ -44,13 +44,7 @@ export const CartProvider = ({ children }) => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_URL}/cart/user/${user.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!res.ok) return handleApiError(res);
-      const data = await res.json();
+      const data = await getCartByUserId(user.id);
       const items = (data?.data?.cartItems ?? []).map(mapCartItemResponse);
       setCartItems(items);
     } catch (err) {
@@ -72,32 +66,26 @@ export const CartProvider = ({ children }) => {
     if (isAuthenticated && user) {
       const variantId = product.variantId ?? product.Variants?.[0]?.id ?? product.variantID ?? product.id;
       try {
-        const res = await fetch(`${API_URL}/cart/add-item`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            userId: user.id,
-            variantId,
-            quantity,
-          }),
+        const response = await addCartItem({
+          userId: user.id,
+          variantId,
+          quantity,
         });
-        if (!res.ok) return handleApiError(res);
-        const response = await res.json();
-        const item = mapCartItemResponse(response?.data ?? {});
-        setCartItems((prev) => {
-          const existing = prev.find((x) => x.id === item.id || x.variantId === item.variantId);
-          if (existing) {
-            return prev.map((x) =>
-              x.id === existing.id || x.variantId === existing.variantId
-                ? { ...x, qty: item.qty, price: item.price, name: item.name }
-                : x
-            );
-          }
-          return [...prev, item];
-        });
+        // Lấy data từ response, map ngay - không cần loadCart()
+        if (response?.data) {
+          const item = mapCartItemResponse(response.data);
+          setCartItems((prev) => {
+            const existing = prev.find((x) => x.id === item.id || x.variantId === item.variantId);
+            if (existing) {
+              return prev.map((x) =>
+                x.id === existing.id || x.variantId === existing.variantId
+                  ? { ...x, qty: item.qty, price: item.price, name: item.name, image: item.image }
+                  : x
+              );
+            }
+            return [...prev, item];
+          });
+        }
       } catch (err) {
         setError(err.message);
       }
@@ -136,84 +124,53 @@ export const CartProvider = ({ children }) => {
 
   const updateItemQuantity = async (cartItemId, newQuantity) => {
     if (newQuantity < 1) return removeItem(cartItemId);
-    setCartItems((prev) => {
-      const updated = prev.map((item) =>
+    
+    // Optimistic update ngay
+    setCartItems((prev) =>
+      prev.map((item) =>
         item.id === cartItemId || item.variantId === cartItemId
-          ? { ...item, quantity: newQuantity, qty: newQuantity } 
+          ? { ...item, qty: newQuantity, quantity: newQuantity }
           : item
-      );
-      
-      if (!isAuthenticated || !user) {
-        saveLocalCart(updated);
-      }
-      return updated;
-    });
+      )
+    );
+    
     if (isAuthenticated && user) {
       try {
-        const res = await fetch(`${API_URL}/cart/update-item`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            cartItemId,
-            quantity: newQuantity,
-          }),
-        });
-
-        if (!res.ok) {
-          handleApiError(res);
-          loadCart();
-          return;
-        }
-
-        const response = await res.json();
+        const response = await updateCartItem({ cartItemId, quantity: newQuantity });
+        // Nếu API trả về data khác, update lại
         if (response?.data) {
-          const itemServer = mapCartItemResponse(response.data);
-          
+          const updated = mapCartItemResponse(response.data);
           setCartItems((prev) =>
-            prev.map((x) =>
-              x.id === cartItemId || x.variantId === cartItemId
-                ? { 
-                    ...x, 
-                    quantity: newQuantity, 
-                    price: itemServer.price ?? x.price, 
-                    productName: itemServer.productName ?? itemServer.name ?? x.productName ?? x.name 
+            prev.map((item) =>
+              item.id === cartItemId || item.variantId === cartItemId
+                ? {
+                    ...item,
+                    qty: updated.qty,
+                    quantity: updated.qty,
+                    price: updated.price || item.price,
                   }
-                : x
+                : item
             )
           );
         }
-
       } catch (err) {
-        console.error("Lỗi đồng bộ:", err);
-        setError(err.message);
-        loadCart();
+        console.error("Lỗi:", err);
+        loadCart(); // Chỉ loadCart khi có lỗi
       }
     }
   };
 
   const removeItem = async (cartItemId) => {
+    // Remove optimistic ngay
+    setCartItems((prev) => prev.filter((item) => item.id !== cartItemId && item.variantId !== cartItemId));
+    
     if (isAuthenticated && user) {
       try {
-        const res = await fetch(`${API_URL}/cart/remove-item/${cartItemId}`, {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) return handleApiError(res);
-        setCartItems((prev) => prev.filter((item) => item.id !== cartItemId && item.variantId !== cartItemId));
+        await removeCartItem(cartItemId);
       } catch (err) {
         setError(err.message);
+        loadCart(); // Chỉ loadCart khi có lỗi để restore
       }
-    } else {
-      setCartItems((prev) => {
-        const updated = prev.filter((item) => item.id !== cartItemId && item.variantId !== cartItemId);
-        saveLocalCart(updated);
-        return updated;
-      });
     }
   };
 

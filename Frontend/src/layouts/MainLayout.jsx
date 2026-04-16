@@ -28,6 +28,7 @@ const MainLayout = () => {
     navigate('/');
   };
 
+
   return (
     <div style={s.app}>
       <nav style={s.nav}>
@@ -46,8 +47,8 @@ const MainLayout = () => {
             <Link to="/lich-su-don-hang" style={s.link}>LỊCH SỬ</Link>
           </div>
 
+          {/* check đăng nhập để hiện nút đăng nhập hoặc menu người dùng */}
           <div style={s.actions} ref={menuRef}>
-            {/* 🟢 ĐOẠN CHECK ĐĂNG NHẬP Ở NGAY ĐÂY */}
             {!isAuthenticated ? (
               <>
                 <Link to="/dang-nhap?mode=login" style={s.loginBtn}>
@@ -83,7 +84,7 @@ const MainLayout = () => {
             
             <div style={s.separator}></div>
             
-            <Link to="/gio-hang" style={s.cartLink}>
+            <Link to="/gio-hang" style={s.cartLink} >
               <span style={{ fontSize: '20px' }}>🛒</span>
               {cartCount > 0 && <span style={s.badge}>{cartCount}</span>}
             </Link>

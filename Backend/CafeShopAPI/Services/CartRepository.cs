@@ -88,7 +88,10 @@ namespace CafeShopAPI.Services
         }
         public async Task<CartItem?> UpdateItemQuantityAsync(int cartItemId, int quantity)
         {
-            var item = await _context.CartItems.FindAsync(cartItemId);
+            var item = await _context.CartItems
+                .Include(ci => ci.Variant)
+                .ThenInclude(v => v.Product)
+                .FirstOrDefaultAsync(ci => ci.Id == cartItemId);
             if (item == null)
             {
                 return null;

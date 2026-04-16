@@ -3,7 +3,7 @@ import React, { useContext, useState } from 'react';
 import { CartContext } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { API_URL } from '../apiConfig';
+import { createAddress, checkoutOrder } from '../services/api';
 
 const ThanhToan = () => {
   const { cartItems, cartTotal, clearCart } = useContext(CartContext);
@@ -51,26 +51,13 @@ const ThanhToan = () => {
 
     try {
       // Create address first
-      const addressRes = await fetch(`${API_URL}/Address`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          recipientName: formData.fullName,
-          phone: formData.phone,
-          email: formData.email || user.email,
-          addressLine: formData.address,
-        }),
+      const addressData = await createAddress({
+        recipientName: formData.fullName,
+        phone: formData.phone,
+        email: formData.email || user.email,
+        addressLine: formData.address,
       });
 
-      if (!addressRes.ok) {
-        const data = await addressRes.json();
-        throw new Error(data?.message || 'Không thể tạo địa chỉ giao hàng.');
-      }
-
-      const addressData = await addressRes.json();
       const addressId = addressData?.data?.id;
 
       if (!addressId) {
@@ -78,26 +65,13 @@ const ThanhToan = () => {
       }
 
       // Create order
-      const orderRes = await fetch(`${API_URL}/Order/checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          addressId,
-          paymentMethod: formData.paymentMethod,
-          notes: formData.notes,
-        }),
+      const orderData = await checkoutOrder({
+        userId: user.id,
+        addressId,
+        paymentMethod: formData.paymentMethod,
+        notes: formData.notes,
       });
 
-      if (!orderRes.ok) {
-        const data = await orderRes.json();
-        throw new Error(data?.message || 'Không thể tạo đơn hàng.');
-      }
-
-      const orderData = await orderRes.json();
       const orderId = orderData?.data?.id;
 
       clearCart();

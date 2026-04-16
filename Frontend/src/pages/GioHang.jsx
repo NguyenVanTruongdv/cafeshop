@@ -5,12 +5,15 @@ import { CartContext } from '../context/CartContext';
 const GioHang = () => {
   const { cartItems, cartTotal, updateItemQuantity, removeItem, loadCart, loading, error } = useContext(CartContext);
 
-  const handleDecrease = (item) => {
-    const currentQty = item.quantity ?? item.qty ?? 1;
-    if (currentQty > 1) {
-      updateItemQuantity(item.id, currentQty - 1);
-    }
-  };
+    const handleDecrease = (item) => {
+      const currentQty = item.quantity ?? item.qty ?? 1;
+      if (currentQty > 1) {
+        updateItemQuantity(item.id, currentQty - 1);
+      } else if (currentQty === 1) {
+        removeItem(item.id);
+      }
+    };
+  
 
   const handleIncrease = (item) => {
     const currentQty = item.quantity ?? item.qty ?? 1;
@@ -72,7 +75,7 @@ const GioHang = () => {
                         />
                       </td>
                       <td style={{ ...styles.td, color: '#4a6b8c', fontWeight: 'bold' }}>
-                        {item.productName || 'Đang cập nhật tên SP...'}
+                        {item.name || 'Đang cập nhật tên SP...'}
                       </td>
                       <td style={styles.tdCenter}>
                         <strong>{item.price ? item.price.toLocaleString('vi-VN') : 0}₫</strong>

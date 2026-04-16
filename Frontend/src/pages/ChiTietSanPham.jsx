@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
-import { API_PRODUCTS_URL } from '../apiConfig';
+import { getProductById, getProductImages } from '../services/api';
 
 const ChiTietSanPham = () => {
   const { id } = useParams();
@@ -18,19 +18,17 @@ const ChiTietSanPham = () => {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(`${API_PRODUCTS_URL}/${id}`);
-        if (!res.ok) {
-          throw new Error('Sản phẩm không tồn tại');
-        }
-        const data = await res.json();
-        
+        const productData = await getProductById(id);
+        const imagesData = await getProductImages(id);
+
         // SỬA Ở ĐÂY: Lấy đúng mảng variants (hỗ trợ cả chữ hoa và chữ thường)
-        const variantsList = data.variants || data.Variants || [];
+        const variantsList = productData.variants || productData.Variants || [];
         
         // Chuẩn hóa lại object product để các phần UI bên dưới không bị lỗi
         const normalizedProduct = {
-          ...data,
-          Variants: variantsList 
+          ...productData,
+          Variants: variantsList,
+          Images: imagesData || []
         };
 
         setProduct(normalizedProduct);

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { API_URL } from '../apiConfig';
+import { login as apiLogin, register as apiRegister } from '../services/api';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -38,20 +38,12 @@ const Auth = () => {
 
     if (isLogin) {
       try {
-        const res = await fetch(`${API_URL}/Auth/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: email.trim(),
-            password: password,
-          }),
+        const data = await apiLogin({
+          email: email.trim(),
+          password: password,
         });
 
-        const data = await res.json();
-
-        if (!res.ok || !data.data) {
+        if (!data.data) {
           setMessage(data.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
           return;
         }
@@ -80,21 +72,13 @@ const Auth = () => {
     }
 
     try {
-      const res = await fetch(`${API_URL}/Auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: name.trim(),
-          email: email.trim(),
-          password: password,
-        }),
+      const data = await apiRegister({
+        name: name.trim(),
+        email: email.trim(),
+        password: password,
       });
 
-      const data = await res.json();
-
-      if (!res.ok || !data.data) {
+      if (!data.data) {
         setMessage(data.message || 'Đăng ký thất bại. Vui lòng thử lại.');
         return;
       }
