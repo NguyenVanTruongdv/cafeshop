@@ -50,7 +50,6 @@ const ThanhToan = () => {
     setLoading(true);
 
     try {
-      // Create address first
       const addressData = await createAddress({
         recipientName: formData.fullName,
         phone: formData.phone,
@@ -63,8 +62,6 @@ const ThanhToan = () => {
       if (!addressId) {
         throw new Error('Không nhận được ID địa chỉ từ server.');
       }
-
-      // Create order
       const orderData = await checkoutOrder({
         userId: user.id,
         addressId,
@@ -145,21 +142,6 @@ const ThanhToan = () => {
               style={styles.input} 
               required 
             />
-          </div>
-          <div style={styles.mapSection}>
-            <label style={styles.label}>📍 Chọn vị trí trên bản đồ để giao hàng chính xác hơn (Tùy chọn)</label>
-            <p style={{fontSize: '13px', color: '#666', marginBottom: '10px'}}>
-              *FE2: Thay iframe này bằng thư viện Google Maps API để khách có thể kéo thả ghim (Pin) và lấy tọa độ Latitude/Longitude lưu vào bảng Address.
-            </p>
-            <iframe 
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.954051012345!2d106.6778103!3d10.7380128!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752fad027e3727%3A0x2a77b414e887f86d!2s180%20Cao%20L%E1%BB%97%2C%20Ph%Ccedil;%E1%BB%9Dng%204%2C%20Qu%E1%BA%ADn%208%2C%20Th%C3%A0nh%20ph%E1%BB%91%20H%E1%BB%93%20Ch%C3%AD%20Minh!5e0!3m2!1svi!2s!4v1700000000000!5m2!1svi!2s" 
-              width="100%" 
-              height="250" 
-              style={{ border: 0, borderRadius: '8px' }} 
-              allowFullScreen="" 
-              loading="lazy"
-              title="Map Picker"
-            ></iframe>
           </div>
 
           <div style={styles.inputGroup}>

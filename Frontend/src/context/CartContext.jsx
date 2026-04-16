@@ -1,4 +1,3 @@
-// File: src/context/CartContext.jsx
 import React, { createContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { getCartByUserId, addCartItem, updateCartItem, removeCartItem } from '../services/api';
@@ -71,7 +70,6 @@ export const CartProvider = ({ children }) => {
           variantId,
           quantity,
         });
-        // Lấy data từ response, map ngay - không cần loadCart()
         if (response?.data) {
           const item = mapCartItemResponse(response.data);
           setCartItems((prev) => {
@@ -119,13 +117,10 @@ export const CartProvider = ({ children }) => {
         return updated;
       });
     }
-    alert(`Đã thêm ${product.name ?? 'sản phẩm'} vào giỏ!`);
   };
 
   const updateItemQuantity = async (cartItemId, newQuantity) => {
     if (newQuantity < 1) return removeItem(cartItemId);
-    
-    // Optimistic update ngay
     setCartItems((prev) =>
       prev.map((item) =>
         item.id === cartItemId || item.variantId === cartItemId
@@ -137,7 +132,6 @@ export const CartProvider = ({ children }) => {
     if (isAuthenticated && user) {
       try {
         const response = await updateCartItem({ cartItemId, quantity: newQuantity });
-        // Nếu API trả về data khác, update lại
         if (response?.data) {
           const updated = mapCartItemResponse(response.data);
           setCartItems((prev) =>
@@ -155,13 +149,12 @@ export const CartProvider = ({ children }) => {
         }
       } catch (err) {
         console.error("Lỗi:", err);
-        loadCart(); // Chỉ loadCart khi có lỗi
+        loadCart(); 
       }
     }
   };
 
   const removeItem = async (cartItemId) => {
-    // Remove optimistic ngay
     setCartItems((prev) => prev.filter((item) => item.id !== cartItemId && item.variantId !== cartItemId));
     
     if (isAuthenticated && user) {
@@ -169,7 +162,7 @@ export const CartProvider = ({ children }) => {
         await removeCartItem(cartItemId);
       } catch (err) {
         setError(err.message);
-        loadCart(); // Chỉ loadCart khi có lỗi để restore
+        loadCart();
       }
     }
   };

@@ -20,20 +20,13 @@ const ChiTietSanPham = () => {
       try {
         const productData = await getProductById(id);
         const imagesData = await getProductImages(id);
-
-        // SỬA Ở ĐÂY: Lấy đúng mảng variants (hỗ trợ cả chữ hoa và chữ thường)
         const variantsList = productData.variants || productData.Variants || [];
-        
-        // Chuẩn hóa lại object product để các phần UI bên dưới không bị lỗi
         const normalizedProduct = {
           ...productData,
           Variants: variantsList,
           Images: imagesData || []
         };
-
         setProduct(normalizedProduct);
-
-        // Set variant mặc định là variant đầu tiên
         if (variantsList.length > 0) {
           setSelectedVariant(variantsList[0]);
         }
@@ -44,30 +37,23 @@ const ChiTietSanPham = () => {
         setLoading(false);
       }
     };
-
     fetchProduct();
   }, [id]);
 
   const handleIncrease = () => setQuantity(prev => prev + 1);
   const handleDecrease = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
-
   if (loading) {
     return <h2 style={{ textAlign: 'center', marginTop: '50px' }}>Đang tải thông tin sản phẩm...</h2>;
   }
-
   if (error) {
     return <h2 style={{ textAlign: 'center', marginTop: '50px' }}>{error}</h2>;
   }
-
   if (!product) {
     return <h2 style={{ textAlign: 'center', marginTop: '50px' }}>Sản phẩm không tồn tại!</h2>;
   }
-
   const imageSrc = product.urlImgMain || product.Images?.[0]?.imageUrl || 'https://placehold.co/500x500/8B0000/FFF?text=Hinh+Anh+Loi';
   const price = selectedVariant?.price ?? 0;
   const type = product.categoryName || 'Sản phẩm';
-  
-  // SỬA Ở ĐÂY: Đảm bảo lấy đúng trường stock chữ thường
   const stock = selectedVariant?.stock ?? 0;
 
   return (
@@ -109,8 +95,6 @@ const ChiTietSanPham = () => {
             <p><strong>Phân loại:</strong> <span>{type}</span></p>
             <p><strong>Tình trạng:</strong> <span style={{color: stock > 0 ? 'green' : 'red'}}>{stock > 0 ? 'Còn hàng' : 'Hết hàng'}</span></p>
           </div>
-
-          {/* Chọn loại sản phẩm */}
           {product.Variants && product.Variants.length > 1 && (
             <div style={styles.variantSection}>
               <span style={styles.variantLabel}>Chọn loại:</span>
@@ -130,7 +114,6 @@ const ChiTietSanPham = () => {
               </div>
             </div>
           )}
-
           <div style={styles.quantitySection}>
             <span style={styles.quantityLabel}>Số lượng:</span>
             <div style={styles.quantityBox}>
@@ -139,7 +122,6 @@ const ChiTietSanPham = () => {
               <button onClick={handleIncrease} style={styles.qtyBtn}>+</button>
             </div>
           </div>
-
           <div style={styles.actionButtons}>
             <button
               style={{
@@ -202,8 +184,6 @@ const ChiTietSanPham = () => {
     </div>
   );
 };
-
-// --- CSS INLINE ---
 const styles = {
   container: {
     maxWidth: '1200px',
@@ -212,15 +192,12 @@ const styles = {
     backgroundColor: '#fff'
   },
   
-  // KHU VỰC 1
   topSection: {
     display: 'flex',
     flexWrap: 'wrap',
     gap: '50px',
     marginBottom: '60px'
   },
-  
-  // Cột Trái (Ảnh)
   imageCol: {
     flex: '1 1 450px',
   },
@@ -243,8 +220,6 @@ const styles = {
     border: '1px solid #ddd',
     cursor: 'pointer'
   },
-
-  // Cột Phải (Thông tin)
   infoCol: {
     flex: '1 1 500px',
     display: 'flex',
@@ -280,8 +255,6 @@ const styles = {
     marginBottom: '30px',
     lineHeight: '1.8'
   },
-
-  // Chọn variant
   variantSection: {
     marginBottom: '30px'
   },
@@ -311,8 +284,6 @@ const styles = {
     backgroundColor: '#8B0000',
     color: '#fff'
   },
-
-  // Chọn số lượng
   quantitySection: {
     display: 'flex',
     alignItems: 'center',

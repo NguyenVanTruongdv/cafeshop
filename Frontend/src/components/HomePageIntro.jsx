@@ -140,7 +140,7 @@ const styles = {
     padding: '30px 0'
   },
   errorMessage: {
-    gridColumn: '1 / -1',
+    gridColumn: '1 / -1', //
     textAlign: 'center',
     color: '#D32F2F',
     padding: '30px 0'

@@ -3238,23 +3238,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\daotr\\.nuget\\packages\\": {},
+    "C:\\Users\\MSI\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Code\\LApTrinhWeb\\cafeshop\\backend\\cafeshopapi\\CafeShopAPI.csproj",
+      "projectUniqueName": "D:\\CafeShop\\cafeshop\\backend\\cafeshopAPI\\CafeShopAPI.csproj",
       "projectName": "CafeShopAPI",
-      "projectPath": "C:\\Code\\LApTrinhWeb\\cafeshop\\backend\\cafeshopapi\\CafeShopAPI.csproj",
-      "packagesPath": "C:\\Users\\daotr\\.nuget\\packages\\",
-      "outputPath": "C:\\Code\\LApTrinhWeb\\cafeshop\\backend\\cafeshopapi\\obj\\",
+      "projectPath": "D:\\CafeShop\\cafeshop\\backend\\cafeshopAPI\\CafeShopAPI.csproj",
+      "packagesPath": "C:\\Users\\MSI\\.nuget\\packages\\",
+      "outputPath": "D:\\CafeShop\\cafeshop\\backend\\cafeshopAPI\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\daotr\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\MSI\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -3263,6 +3263,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -3281,7 +3282,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "10.0.200"
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net8.0": {
@@ -3345,7 +3346,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.313/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

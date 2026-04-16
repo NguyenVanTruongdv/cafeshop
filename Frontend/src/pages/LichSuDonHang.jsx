@@ -1,4 +1,4 @@
-// File: src/pages/LichSuDonHang.jsx
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getOrdersByUser } from '../services/api';
@@ -139,14 +139,14 @@ const LichSuDonHang = () => {
                       <p style={styles.productQty}>x{item.qty}</p>
                     </div>
                     <div style={styles.productPrice}>
-                      {item.price.toLocaleString('vi-VN')}₫
+                     {(item.price || 0).toLocaleString('vi-VN')}₫
                     </div>
                   </div>
                 ))}
               </div>
               <div style={styles.orderFooter}>
                 <div style={styles.orderTotal}>
-                  Thành tiền: <span style={styles.totalPrice}>{order.total.toLocaleString('vi-VN')}₫</span>
+                  Thành tiền: <span style={styles.totalPrice}>{(order.total || 0).toLocaleString('vi-VN')}₫</span>
                 </div>
                 <div style={styles.actionButtons}>
                   <Link to={`/lich-su-don-hang/${order.id}`} style={styles.btnOutline}>
