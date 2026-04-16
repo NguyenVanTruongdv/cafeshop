@@ -3,7 +3,7 @@ name: CI/CD Full
 on:
   push:
     branches:
-      - main
+      - '**'   # 🔥 CI chạy tất cả branch
   workflow_dispatch:
 
 jobs:
@@ -53,13 +53,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: ci
 
+    # 🔥 CHỈ deploy khi main
+    if: github.ref == 'refs/heads/main'
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       # ===== FRONTEND (VERCEL) =====
       - name: Deploy Frontend
-        working-directory: Frontend
         run: npx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
