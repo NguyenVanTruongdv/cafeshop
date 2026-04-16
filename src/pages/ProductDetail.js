@@ -1,35 +1,58 @@
-import { useParams } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
+﻿import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+const moneyFormatter = new Intl.NumberFormat("vi-VN", {
+  style: "currency",
+  currency: "VND",
+  maximumFractionDigits: 0
+});
+
+function formatCurrency(value) {
+  return moneyFormatter.format(value || 0);
+}
 
 export default function ProductDetail() {
   const { id } = useParams();
+  const fileRef = useRef();
 
   const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [mainImage, setMainImage] = useState("");
 
-  const fileRef = useRef();
   useEffect(() => {
     fetch(`http://localhost:5224/api/products/${id}`)
-      .then(res => res.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         setProduct(data);
 
-        const main = data.images?.find(i => i.isMain);
-        setMainImage(main?.imageUrl);
+        const main = data.images?.find((image) => image.isMain);
+        setMainImage(main?.imageUrl || data.images?.[0]?.imageUrl || "");
 
         if (data.variants?.length > 0) {
           setSelectedVariant(data.variants[0]);
         }
       });
   }, [id]);
+
+  const currentImage = useMemo(() => {
+    if (!mainImage) {
+      return "";
+    }
+
+    return mainImage.startsWith("data:")
+      ? mainImage
+      : `http://localhost:5224/images/${mainImage}`;
+  }, [mainImage]);
+
   const handleChooseImage = () => {
     fileRef.current.click();
   };
 
-  const handleImage = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const handleImage = (event) => {
+    const file = event.target.files[0];
+    if (!file) {
+      return;
+    }
 
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -37,27 +60,31 @@ export default function ProductDetail() {
     };
     reader.readAsDataURL(file);
   };
+
   const handleDelete = async () => {
-    const confirmDelete = window.confirm("Bạn có chắc muốn xóa?");
-    if (!confirmDelete) return;
+    const confirmDelete = window.confirm("Ban co chac muon xoa?");
+    if (!confirmDelete) {
+      return;
+    }
 
     try {
       await fetch(`http://localhost:5224/api/products/${id}`, {
         method: "DELETE"
       });
 
-      alert("Xóa thành công");
+      alert("Xoa thanh cong");
       window.location.href = "/products";
-    } catch (err) {
-      console.log(err);
-      alert("Xóa thất bại");
+    } catch (error) {
+      console.log(error);
+      alert("Xoa that bai");
     }
   };
+
   const handleEdit = async () => {
     try {
       const updated = {
         ...product,
-        name: product.name + " (edited)"
+        name: `${product.name} (edited)`
       };
 
       await fetch(`http://localhost:5224/api/products/${id}`, {
@@ -68,181 +95,187 @@ export default function ProductDetail() {
         body: JSON.stringify(updated)
       });
 
-      alert("Update thành công");
+      alert("Update thanh cong");
       window.location.reload();
-    } catch (err) {
-      console.log(err);
-      alert("Update lỗi");
+    } catch (error) {
+      console.log(error);
+      alert("Update loi");
     }
   };
 
-  if (!product) return <p>Loading...</p>;
+  if (!product) {
+    return (
+      <div className="page-shell">
+        <div className="panel">
+          <div className="empty-state empty-state--fill">
+            <strong>Dang tai thong tin san pham...</strong>
+            <p>Du lieu se xuat hien ngay khi API phan hoi.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding: "30px", display: "flex", gap: "40px" }}>
-      <div>
-        <img
-          src={
-            mainImage?.startsWith("data:")
-              ? mainImage
-              : `http://localhost:5224/images/${mainImage}`
-          }
-          alt=""
-          style={{
-            width: "400px",
-            height: "400px",
-            objectFit: "cover",
-            borderRadius: "10px"
-          }}
-        />
-        <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-          {product.images?.map((img) => (
-            <img
-              key={img.imageUrl}
-              src={`http://localhost:5224/images/${img.imageUrl}`}
-              alt=""
-              width="70"
-              height="70"
-              style={{
-                cursor: "pointer",
-                border: "1px solid #ccc",
-                borderRadius: "6px"
-              }}
-              onClick={() => setMainImage(img.imageUrl)}
-            />
-          ))}
+    <div className="page-shell">
+      <section className="page-banner page-banner--rose">
+        <div className="page-banner__content">
+          <span className="hero-badge">Product detail</span>
+          <h2>{product.name}</h2>
         </div>
-        <input
-          type="file"
-          ref={fileRef}
-          style={{ display: "none" }}
-          onChange={handleImage}
-        />
 
-        <button onClick={handleChooseImage} style={{ marginTop: "10px" }}>
-          Edit Images
-        </button>
-      </div>
-      <div>
-        <h2>{product.name}</h2>
-        <p>{product.categoryName}</p>
-        <div style={{ marginTop: "10px" }}>
-  <label>Description: </label>
-  <input
-    type="text"
-    value={product.description || ""}
-    onChange={(e) =>
-      setProduct({
-        ...product,
-        description: e.target.value
-      })
-    }
-    style={{
-      padding: "6px",
-      borderRadius: "6px",
-      border: "1px solid #ccc",
-      width: "300px",
-      marginLeft: "10px"
-    }}
-  />
-</div>
-
-        <h4>Chọn trọng lượng:</h4>
-
-        <div style={{ display: "flex", gap: "10px" }}>
-          {product.variants?.map((v) => (
-            <button
-              key={v.id}
-              onClick={() => setSelectedVariant(v)}
-              style={{
-                padding: "8px 12px",
-                borderRadius: "8px",
-                border:
-                  selectedVariant?.id === v.id
-                    ? "2px solid black"
-                    : "1px solid #ccc",
-                background:
-                  selectedVariant?.id === v.id ? "#000" : "#fff",
-                color:
-                  selectedVariant?.id === v.id ? "#fff" : "#000"
-              }}
-            >
-              {v.weight}
-            </button>
-          ))}
+        <div className="hero-stat-grid">
+          <div className="hero-stat">
+            <span>Danh muc</span>
+            <strong>{product.categoryName || "N/A"}</strong>
+            <small>Thong tin nhom san pham</small>
+          </div>
+          <div className="hero-stat">
+            <span>Gia dang chon</span>
+            <strong>{formatCurrency(selectedVariant?.price)}</strong>
+            <small>Cap nhat theo bien the hien tai</small>
+          </div>
+          <div className="hero-stat">
+            <span>Ton kho</span>
+            <strong>{selectedVariant?.stock || 0}</strong>
+            <small>{product.variants?.length || 0} bien the dang co</small>
+          </div>
         </div>
-        <div style={{ marginTop: "20px" }}>
-  <label>Price: </label>
-  <input
-    type="number"
-    value={selectedVariant?.price || ""}
-    onChange={(e) => {
-      const newPrice = e.target.value;
+      </section>
 
-      setSelectedVariant({
-        ...selectedVariant,
-        price: newPrice
-      });
-    }}
-    style={{
-      padding: "5px",
-      borderRadius: "6px",
-      border: "1px solid #ccc",
-      width: "120px",
-      marginLeft: "10px"
-    }}
-  />
-  <span> đ</span>
-</div>
+      <section className="detail-layout">
+        <article className="panel panel--soft">
+          <div className="panel__header">
+            <div>
+              <span className="panel__eyebrow">Gallery</span>
+              <h3>Hinh anh san pham</h3>
+            </div>
+          </div>
 
-        <div style={{ marginTop: "10px" }}>
-  <label>Stock: </label>
-  <input
-    type="number"
-    value={selectedVariant?.stock || ""}
-    onChange={(e) => {
-      const newStock = e.target.value;
+          {currentImage ? (
+            <img className="detail-image" src={currentImage} alt={product.name} />
+          ) : (
+            <div className="detail-image detail-image--placeholder">No image</div>
+          )}
 
-      setSelectedVariant({
-        ...selectedVariant,
-        stock: newStock
-      });
-    }}
-    style={{
-      padding: "5px",
-      borderRadius: "6px",
-      border: "1px solid #ccc",
-      width: "80px",
-      marginLeft: "10px"
-    }}
-  />
-</div>
-        <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
-          <button
-            onClick={handleEdit}
-            style={{
-              background: "blue",
-              color: "#fff",
-              padding: "10px",
-              borderRadius: "8px"
-            }}
-          >
-            Edit Product
+          <div className="thumb-row">
+            {product.images?.map((image) => (
+              <button
+                key={image.imageUrl}
+                type="button"
+                className={`thumb-button${mainImage === image.imageUrl ? " is-active" : ""}`}
+                onClick={() => setMainImage(image.imageUrl)}
+              >
+                <img src={`http://localhost:5224/images/${image.imageUrl}`} alt={product.name} />
+              </button>
+            ))}
+          </div>
+
+          <input
+            type="file"
+            ref={fileRef}
+            style={{ display: "none" }}
+            onChange={handleImage}
+          />
+
+          <button type="button" className="btn btn--ghost" onClick={handleChooseImage}>
+            Doi anh hien thi
           </button>
+        </article>
 
-          <button
-            onClick={handleDelete}
-            style={{
-              background: "red",
-              color: "#fff",
-              padding: "10px",
-              borderRadius: "8px"
-            }}
-          >
-            Delete
-          </button>
-        </div>
-      </div>
+        <article className="panel">
+          <div className="panel__header">
+            <div>
+              <span className="panel__eyebrow">Information</span>
+              <h3>Thong tin va bien the</h3>
+            </div>
+          </div>
+
+          <div className="form-stack">
+            <label className="field">
+              <span>Mo ta</span>
+              <input
+                className="input-control"
+                type="text"
+                value={product.description || ""}
+                onChange={(event) =>
+                  setProduct({
+                    ...product,
+                    description: event.target.value
+                  })
+                }
+              />
+            </label>
+
+            <div className="field">
+              <span>Chon trong luong</span>
+              <div className="variant-row">
+                {product.variants?.map((variant) => (
+                  <button
+                    key={variant.id}
+                    type="button"
+                    className={`variant-chip${
+                      selectedVariant?.id === variant.id ? " is-active" : ""
+                    }`}
+                    onClick={() => setSelectedVariant(variant)}
+                  >
+                    {variant.weight}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="form-grid">
+              <label className="field">
+                <span>Price</span>
+                <input
+                  className="input-control"
+                  type="number"
+                  value={selectedVariant?.price || ""}
+                  onChange={(event) => {
+                    if (!selectedVariant) {
+                      return;
+                    }
+
+                    setSelectedVariant({
+                      ...selectedVariant,
+                      price: event.target.value
+                    });
+                  }}
+                />
+              </label>
+
+              <label className="field">
+                <span>Stock</span>
+                <input
+                  className="input-control"
+                  type="number"
+                  value={selectedVariant?.stock || ""}
+                  onChange={(event) => {
+                    if (!selectedVariant) {
+                      return;
+                    }
+
+                    setSelectedVariant({
+                      ...selectedVariant,
+                      stock: event.target.value
+                    });
+                  }}
+                />
+              </label>
+            </div>
+
+            <div className="toolbar toolbar--end">
+              <button type="button" className="btn btn--primary" onClick={handleEdit}>
+                Edit product
+              </button>
+              <button type="button" className="btn btn--danger" onClick={handleDelete}>
+                Delete product
+              </button>
+            </div>
+          </div>
+        </article>
+      </section>
     </div>
   );
 }

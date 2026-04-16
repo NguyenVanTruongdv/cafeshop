@@ -1,62 +1,60 @@
-export default function Topbar() {
+import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
+import AutoGraphRoundedIcon from "@mui/icons-material/AutoGraphRounded";
+
+export default function Topbar({ meta, onMenuClick }) {
+  const todayLabel = new Intl.DateTimeFormat("vi-VN", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long"
+  }).format(new Date());
+
   return (
-    <div style={topbar}>
- 
-      <div style={left}>
-        <span style={dot}></span>
-        <h3 style={{ margin: 0 }}>CAFE MATERIAL</h3>
+    <header className="topbar">
+      <div className="topbar__left">
+        <button
+          type="button"
+          className="icon-button icon-button--menu"
+          onClick={onMenuClick}
+          aria-label="Mo dieu huong"
+        >
+          <MenuRoundedIcon fontSize="small" />
+        </button>
+
+        <div className="topbar__meta">
+          <span className="eyebrow">{meta.eyebrow}</span>
+          <h1>{meta.title}</h1>
+          <p>{meta.description}</p>
+        </div>
       </div>
 
-      <div style={right}>
-        <input
-          placeholder="Search..."
-          style={search}
-        />
-        <div style={icon}>🔔</div>
-        <div style={icon}>👤</div>
+      <div className="topbar__right">
+        <label className="topbar__search" aria-label="Tim kiem nhanh">
+          <SearchRoundedIcon fontSize="small" />
+          <input placeholder="Tim nhanh san pham, don hang, nguoi dung..." />
+        </label>
+
+        <div className="topbar__status">
+          <span className="topbar__badge topbar__badge--success">
+            <AutoGraphRoundedIcon fontSize="inherit" />
+            Store live
+          </span>
+          <span className="topbar__badge">{todayLabel}</span>
+        </div>
+
+        <button type="button" className="icon-button" aria-label="Thong bao">
+          <NotificationsRoundedIcon fontSize="small" />
+        </button>
+
+        <div className="profile-card">
+          <div className="profile-card__avatar">CM</div>
+          <div>
+            <strong>Admin Team</strong>
+            <span>Quan tri van hanh</span>
+          </div>
+        </div>
       </div>
-    </div>
+    </header>
   );
 }
-
-const topbar = {
-  height: "60px",
-  background: "#3b3f45",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "0 20px",
-  color: "#fff"
-};
-
-const left = {
-  display: "flex",
-  alignItems: "center",
-  gap: "10px"
-};
-
-const dot = {
-  width: "10px",
-  height: "10px",
-  borderRadius: "50%",
-  background: "#00d1ff"
-};
-
-const right = {
-  display: "flex",
-  alignItems: "center",
-  gap: "15px"
-};
-
-const search = {
-  padding: "6px 10px",
-  borderRadius: "20px",
-  border: "none",
-  outline: "none",
-  width: "180px"
-};
-
-const icon = {
-  cursor: "pointer",
-  fontSize: "18px"
-};

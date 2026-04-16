@@ -1,47 +1,91 @@
-import { Link, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import LocalCafeRoundedIcon from "@mui/icons-material/LocalCafeRounded";
+import SpaceDashboardRoundedIcon from "@mui/icons-material/SpaceDashboardRounded";
+import GroupRoundedIcon from "@mui/icons-material/GroupRounded";
+import CategoryRoundedIcon from "@mui/icons-material/CategoryRounded";
+import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
+import ReceiptLongRoundedIcon from "@mui/icons-material/ReceiptLongRounded";
 
-export default function Sidebar() {
-  const location = useLocation();
+const menu = [
+  {
+    label: "Tong quan",
+    path: "/",
+    Icon: SpaceDashboardRoundedIcon,
+    description: "Doanh thu va hieu suat",
+    end: true
+  },
+  {
+    label: "Nguoi dung",
+    path: "/users",
+    Icon: GroupRoundedIcon,
+    description: "Tai khoan va vai tro"
+  },
+  {
+    label: "Danh muc",
+    path: "/categories",
+    Icon: CategoryRoundedIcon,
+    description: "Nhom san pham"
+  },
+  {
+    label: "San pham",
+    path: "/products",
+    Icon: Inventory2RoundedIcon,
+    description: "Kho mat hang"
+  },
+  {
+    label: "Don hang",
+    path: "/orders",
+    Icon: ReceiptLongRoundedIcon,
+    description: "Dong xu ly don"
+  }
+];
 
-  const menu = [
-    { name: "Dashboard", path: "/" },
-    { name: "Users", path: "/users" },
-    { name: "Category", path: "/categories" },
-    { name: "Product", path: "/products" },
-    { name: "Order", path: "/orders" },
-  ];
-
+export default function Sidebar({ open, onClose }) {
   return (
-    <div
-      style={{
-        width: "220px",
-        background: "#020617",
-        color: "white",
-        height: "100vh",
-        padding: "20px",
-      }}
-    >
-      <h2>Admin</h2>
+    <aside className={`sidebar${open ? " is-open" : ""}`}>
+      <div className="sidebar__brand">
+        <div className="sidebar__brand-mark">
+          <LocalCafeRoundedIcon fontSize="small" />
+        </div>
 
-      {menu.map((item) => (
-        <Link
-          key={item.path}
-          to={item.path}
-          style={{
-            display: "block",
-            padding: "10px",
-            marginTop: "10px",
-            borderRadius: "8px",
-            textDecoration: "none",
-            color:
-              location.pathname === item.path ? "white" : "#94a3b8",
-            background:
-              location.pathname === item.path ? "#1e293b" : "transparent",
-          }}
-        >
-          {item.name}
-        </Link>
-      ))}
-    </div>
+        <div>
+          <span className="sidebar__eyebrow">Admin studio</span>
+          <h2>Cafe Material</h2>
+        </div>
+      </div>
+
+      <div className="sidebar__panel">
+        <span className="sidebar__chip">Bang dieu khien truc quan</span>
+      </div>
+
+      <nav className="sidebar__nav" aria-label="Dieu huong chinh">
+        {menu.map(({ label, path, Icon, description, end }) => (
+          <NavLink
+            key={path}
+            to={path}
+            end={end}
+            onClick={onClose}
+            className={({ isActive }) =>
+              `sidebar__link${isActive ? " sidebar__link--active" : ""}`
+            }
+          >
+            <span className="sidebar__icon">
+              <Icon fontSize="small" />
+            </span>
+
+            <span className="sidebar__copy">
+              <strong>{label}</strong>
+              <small>{description}</small>
+            </span>
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="sidebar__footer">
+        <span className="sidebar__chip sidebar__chip--muted">
+          Đăng Xuất
+        </span>
+      </div>
+    </aside>
   );
 }

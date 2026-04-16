@@ -1,27 +1,41 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [selected, setSelected] = useState(null);
-
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
+
   useEffect(() => {
     fetch("http://localhost:5224/api/categories")
-      .then(res => res.json())
-      .then(data => setCategories(data.data || data));
+      .then((response) => response.json())
+      .then((data) => {
+        const list = data.data || data;
+        setCategories(list);
+        setSelected((current) => current || list[0] || null);
+      });
 
     fetch("http://localhost:5224/api/products")
-      .then(res => res.json())
-      .then(data => setProducts(data.data || data));
+      .then((response) => response.json())
+      .then((data) => setProducts(data.data || data));
   }, []);
 
-  const handleSelect = (cat) => {
-    setSelected(cat);
-  };
+  const linkedCategoryCount = useMemo(() => {
+    return categories.filter((category) =>
+      products.some((product) => product.categoryName === category.name)
+    ).length;
+  }, [categories, products]);
+
+  const filteredProducts = products.filter(
+    (product) => product.categoryName === selected?.name
+  );
+
   const handleAdd = () => {
-    if (!newName) return alert("Nhập tên");
+    if (!newName) {
+      alert("Nhap ten category");
+      return;
+    }
 
     const newItem = {
       id: Date.now(),
@@ -30,132 +44,202 @@ export default function Categories() {
     };
 
     setCategories([...categories, newItem]);
+    setSelected(newItem);
     setNewName("");
     setNewDesc("");
   };
-  const handleDelete = (cat) => {
+
+  const handleDelete = (category) => {
     const hasProduct = products.some(
-      p => p.categoryName === cat.name
+      (product) => product.categoryName === category.name
     );
 
     if (hasProduct) {
-      alert("Không thể xóa vì còn sản phẩm");
+      alert("Khong the xoa vi con san pham");
       return;
     }
 
-    setCategories(categories.filter(c => c.id !== cat.id));
+    setCategories(categories.filter((item) => item.id !== category.id));
+    if (selected?.id === category.id) {
+      setSelected(null);
+    }
   };
-  const handleEdit = (cat) => {
-    const newName = prompt("Tên mới:", cat.name);
-    if (!newName) return;
 
-    const updated = categories.map(c =>
-      c.id === cat.id ? { ...c, name: newName } : c
+  const handleEdit = (category) => {
+    const updatedName = prompt("Ten moi:", category.name);
+    if (!updatedName) {
+      return;
+    }
+
+    const updated = categories.map((item) =>
+      item.id === category.id ? { ...item, name: updatedName } : item
     );
 
     setCategories(updated);
+    setSelected((current) =>
+      current?.id === category.id ? { ...category, name: updatedName } : current
+    );
   };
-  const filteredProducts = products.filter(
-    p => p.categoryName === selected?.name
-  );
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Categories</h2>
-      <div style={{ marginBottom: "20px" }}>
-        <input
-          placeholder="Tên category"
-          value={newName}
-          onChange={e => setNewName(e.target.value)}
-        />
-
-        <input
-          placeholder="Mô tả"
-          value={newDesc}
-          onChange={e => setNewDesc(e.target.value)}
-        />
-
-        <button style={btn} onClick={handleAdd}>
-          + Add
-        </button>
-      </div>
-
-      <div style={{ display: "flex", gap: "20px" }}>
-        <div style={{ width: "300px" }}>
-          {categories.map(cat => (
-            <div
-              key={cat.id}
-              onClick={() => handleSelect(cat)}
-              style={{
-                 border: "4px solid #0f0f0f",
-                padding: "10px",
-                marginBottom: "10px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                background:
-                  selected?.id === cat.id ? "#1c9464" : "#f1f1f1",
-                color:
-                  selected?.id === cat.id ? "#fff" : "#000"
-              }}
-            >
-              <b>{cat.name}</b>
-              <p style={{ fontSize: "12px" }}>{cat.description}</p>
-
-              <div style={{ marginTop: "5px" }}>
-                <button onClick={() => handleEdit(cat)}>Edit</button>
-                <button
-                  onClick={() => handleDelete(cat)}
-                  style={{ marginLeft: "5px", color: "red" }}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+    <div className="page-shell">
+      <section className="page-banner page-banner--sage">
+        <div className="page-banner__content">
+          <span className="hero-badge">Category structure</span>
         </div>
-        <div style={{ flex: 1 }}>
-          <h3>
-            Products of: {selected?.name || "..." }
-          </h3>
 
-          <div style={grid}>
-            {filteredProducts.map(p => (
-              <div key={p.id} style={card}>
-                <img
-                  src={`http://localhost:5224/images/${p.urlImgMain}`}
-                  alt=""
-                  style={{ width: "100%", height: "150px", objectFit: "cover" }}
-                />
-                <h4>{p.name}</h4>
+        <div className="hero-stat-grid">
+          <div className="hero-stat">
+            <span>Tong danh muc</span>
+            <strong>{categories.length}</strong>
+            <small>So nhom san pham dang quan ly</small>
+          </div>
+          <div className="hero-stat">
+            <span>Danh muc co lien ket</span>
+            <strong>{linkedCategoryCount}</strong>
+            <small>Da co san pham thuoc ve</small>
+          </div>
+          <div className="hero-stat">
+            <span>San pham hien xem</span>
+            <strong>{filteredProducts.length}</strong>
+            <small>{selected ? `Trong ${selected.name}` : "Chon mot danh muc de xem"}</small>
+          </div>
+        </div>
+      </section>
+
+      <section className="content-grid content-grid--wide">
+        <article className="panel panel--soft">
+          <div className="panel__header">
+            <div>
+              <span className="panel__eyebrow">Create & organize</span>
+              <h3>Danh sach danh muc</h3>
+            </div>
+          </div>
+
+          <div className="form-stack form-stack--compact">
+            <label className="field">
+              <span>Ten danh muc</span>
+              <input
+                className="input-control"
+                placeholder="Vi du: Hat rang moc"
+                value={newName}
+                onChange={(event) => setNewName(event.target.value)}
+              />
+            </label>
+
+            <label className="field">
+              <span>Mo ta ngan</span>
+              <input
+                className="input-control"
+                placeholder="Them mo ta ngan de phan biet"
+                value={newDesc}
+                onChange={(event) => setNewDesc(event.target.value)}
+              />
+            </label>
+
+            <button type="button" className="btn btn--primary" onClick={handleAdd}>
+              Them category
+            </button>
+          </div>
+
+          <div className="stack-list">
+            {categories.map((category) => (
+              <div
+                key={category.id}
+                className={`list-card${selected?.id === category.id ? " list-card--active" : ""}`}
+                onClick={() => setSelected(category)}
+              >
+                <div className="list-card__content">
+                  <strong>{category.name}</strong>
+                  <p>{category.description || "Chua co mo ta cho danh muc nay."}</p>
+                </div>
+
+                <div className="list-card__actions">
+                  <button
+                    type="button"
+                    className="btn btn--ghost btn--small"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleEdit(category);
+                    }}
+                  >
+                    Sua
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn--danger btn--small"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleDelete(category);
+                    }}
+                  >
+                    Xoa
+                  </button>
+                </div>
               </div>
             ))}
           </div>
-        </div>
+        </article>
 
-      </div>
+        <article className="panel">
+          {selected ? (
+            <>
+              <div className="panel__header">
+                <div>
+                  <span className="panel__eyebrow">Selected category</span>
+                  <h3>{selected.name}</h3>
+                </div>
+                <p>{selected.description || "Danh muc nay chua co mo ta chi tiet."}</p>
+              </div>
+
+              <div className="summary-list summary-list--compact">
+                <div className="summary-item summary-item--soft">
+                  <div>
+                    <strong>San pham hien co</strong>
+                    <span>So item thuoc danh muc da chon</span>
+                  </div>
+                  <b>{filteredProducts.length}</b>
+                </div>
+                <div className="summary-item summary-item--soft">
+                  <div>
+                    <strong>Trang thai</strong>
+                    <span>Da san sang de tiep tuc sap xep</span>
+                  </div>
+                  <b>Active</b>
+                </div>
+              </div>
+
+              <div className="card-grid card-grid--products">
+                {filteredProducts.length ? (
+                  filteredProducts.map((product) => (
+                    <div key={product.id} className="product-tile product-tile--compact">
+                      <div className="product-tile__media">
+                        <img
+                          className="product-tile__image"
+                          src={`http://localhost:5224/images/${product.urlImgMain}`}
+                          alt={product.name}
+                        />
+                      </div>
+                      <div className="product-tile__body">
+                        <strong>{product.name}</strong>
+                        <p>{product.categoryName}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="empty-state empty-state--card-grid">
+                    <strong>Danh muc nay chua co san pham</strong>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="empty-state empty-state--fill">
+              <strong>Chon mot danh muc o ben trai</strong>
+            </div>
+          )}
+        </article>
+      </section>
     </div>
   );
 }
-const btn = {
-  background: "#000",
-  color: "#fff",
-  padding: "6px 12px",
-  marginLeft: "5px",
-  borderRadius: "6px",
-  border: "none"
-};
-
-const grid = {
- 
-  display: "grid",
-  gridTemplateColumns: "repeat(3,1fr)",
-  gap: "10px"
-};
-
-const card = {
-  
-  background: "#fff",
-  padding: "10px",
-  borderRadius: "10px",
-  boxShadow: "0 3px 8px rgba(0,0,0,0.1)"
-};
