@@ -115,7 +115,7 @@ const MainLayout = () => {
 
 const s = {
   app: { 
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", 
+    fontFamily: "Arial, Helvetica, sans-serif", 
     backgroundColor: '#F9F8F3', 
     minHeight: '100vh', 
     color: '#3E2723', 
