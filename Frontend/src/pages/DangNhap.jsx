@@ -87,6 +87,7 @@ const Auth = () => {
       const data = await apiRegister({
         name: name.trim(),
         email: email.trim(),
+        role: 'Customer',
         password: password,
       });
 

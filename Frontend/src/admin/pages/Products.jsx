@@ -27,7 +27,7 @@ export default function Products() {
     const normalized = String(raw).replace(/\\/g, "/");
     if (normalized.startsWith("data:") || normalized.startsWith("http")) return normalized;
     if (normalized.startsWith("/")) return `${base}${normalized}`;
-    if (normalized.startsWith("images/")) return `${base}/${normalized}`;
+    if (normalized.startsWith("/images")) return `${base}/${normalized}`;
     if (normalized.startsWith("wwwroot/images/")) return `${base}/${normalized.replace("wwwroot/", "")}`;
     return `${base}/images/${normalized}`;
   };
