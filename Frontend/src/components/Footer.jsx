@@ -15,7 +15,6 @@ const Footer = () => {
     <div style={styles.footerContainer}>
       <div style={styles.grid}>
 
-        {/* CỘT 2: HƯỚNG DẪN MUA HÀNG */}
         <div>
           <h3 style={styles.heading}>HƯỚNG DẪN MUA HÀNG</h3>
           <div style={styles.shortLine}></div>
@@ -28,7 +27,6 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* CỘT 3: CAM KẾT */}
         <div>
           <h3 style={styles.heading}>CAM KẾT</h3>
           <div style={styles.shortLine}></div>
@@ -41,7 +39,6 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* CỘT 4: LIÊN HỆ */}
         <div>
           <h3 style={styles.heading}>LIÊN HỆ</h3>
           <div style={styles.shortLine}></div>

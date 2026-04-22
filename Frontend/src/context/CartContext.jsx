@@ -1,7 +1,7 @@
-// File: src/context/CartContext.jsx
 import React, { createContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { API_URL } from '../apiConfig';
+import { laygiohangbyuserid, themitemvaogiohang, capnhatitemgiohang, xoaitemgiohang, laysanpham } from '../services/api';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 export const CartContext = createContext();
 
@@ -15,14 +15,17 @@ const getStoredCart = () => {
   }
 };
 
-const mapCartItemResponse = (item) => ({
-  id: item.id ?? item.Id,
-  variantId: item.variantId ?? item.VariantId ?? item.VariantID,
-  qty: item.quantity ?? item.Quantity ?? item.qty ?? 1,
-  price: Number(item.price ?? item.Price ?? 0),
-  name: item.productName ?? item.ProductName ?? item.name ?? 'Sản phẩm',
-  image: item.image ?? item.urlImgMain ?? item.imageUrl ?? item.ImageUrl ?? ''
-});
+const mapCartItemResponse = (item) => {
+  const rawImage = item.image ?? item.urlImgMain ?? item.imageUrl ?? item.ImageUrl ?? '';
+  return {
+    id: item.id ?? item.Id,
+    variantId: item.variantId ?? item.VariantId ?? item.VariantID,
+    qty: item.quantity ?? item.Quantity ?? item.qty ?? 1,
+    price: Number(item.price ?? item.Price ?? 0),
+    name: item.productName ?? item.ProductName ?? item.name ?? 'Sản phẩm',
+    image: resolveImageUrl(rawImage),
+  };
+};
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(getStoredCart);
@@ -44,14 +47,68 @@ export const CartProvider = ({ children }) => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_URL}/cart/user/${user.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!res.ok) return handleApiError(res);
-      const data = await res.json();
-      const items = (data?.data?.cartItems ?? []).map(mapCartItemResponse);
+      // Lấy giỏ hàng từ backend
+      const data = await laygiohangbyuserid(user.id);
+      let items = (data?.data?.cartItems ?? []).map(mapCartItemResponse);
+      
+      // Nếu không có items, return ngay
+      if (items.length === 0) {
+        setCartItems(items);
+        return;
+      }
+      
+      // Fetch danh sách tất cả sản phẩm để lấy ảnh
+      try {
+        const productsRes = await laysanpham();
+        const products = Array.isArray(productsRes) ? productsRes : productsRes?.data || [];
+        
+        const productImageMap = {};
+        const variantImageMap = {};
+
+        products.forEach(product => {
+          const imageSource =
+            product.urlImgMain ||
+            product.image ||
+            product.imageUrl ||
+            product.ImageUrl ||
+            product.Images?.[0]?.imageUrl ||
+            product.Images?.[0]?.ImageUrl ||
+            product.images?.[0]?.imageUrl ||
+            product.images?.[0]?.ImageUrl ||
+            '';
+          const resolved = resolveImageUrl(imageSource);
+          if (resolved) {
+            if (product.id != null) {
+              productImageMap[product.id] = resolved;
+            }
+            if (product.name) {
+              productImageMap[product.name] = resolved;
+            }
+          }
+
+          const variants = product.Variants || product.variants || [];
+          variants.forEach((variant) => {
+            if (variant?.id != null && resolved) {
+              variantImageMap[variant.id] = resolved;
+            }
+          });
+        });
+        
+        items = items.map(item => ({
+          ...item,
+          image:
+            item.image ||
+            variantImageMap[item.variantId] ||
+            productImageMap[item.productId] ||
+            productImageMap[item.id] ||
+            productImageMap[item.name] ||
+            ''
+        }));
+      } catch (imgErr) {
+        console.warn('Failed to fetch product images:', imgErr);
+        // Nếu lỗi fetch ảnh, vẫn return items (ảnh sẽ là empty)
+      }
+      
       setCartItems(items);
     } catch (err) {
       setError(err.message);
@@ -72,32 +129,31 @@ export const CartProvider = ({ children }) => {
     if (isAuthenticated && user) {
       const variantId = product.variantId ?? product.Variants?.[0]?.id ?? product.variantID ?? product.id;
       try {
-        const res = await fetch(`${API_URL}/cart/add-item`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            userId: user.id,
-            variantId,
-            quantity,
-          }),
+        const response = await themitemvaogiohang({
+          userId: user.id,
+          variantId,
+          quantity,
         });
-        if (!res.ok) return handleApiError(res);
-        const response = await res.json();
-        const item = mapCartItemResponse(response?.data ?? {});
-        setCartItems((prev) => {
-          const existing = prev.find((x) => x.id === item.id || x.variantId === item.variantId);
-          if (existing) {
-            return prev.map((x) =>
-              x.id === existing.id || x.variantId === existing.variantId
-                ? { ...x, qty: item.qty, price: item.price, name: item.name }
-                : x
-            );
+        if (response?.data) {
+          let item = mapCartItemResponse(response.data);
+          
+          // Nếu backend không gửi ảnh, lấy từ product param
+          if (!item.image && product.image) {
+            item = { ...item, image: product.image };
           }
-          return [...prev, item];
-        });
+          
+          setCartItems((prev) => {
+            const existing = prev.find((x) => x.id === item.id || x.variantId === item.variantId);
+            if (existing) {
+              return prev.map((x) =>
+                x.id === existing.id || x.variantId === existing.variantId
+                  ? { ...x, qty: item.qty, price: item.price, name: item.name, image: item.image || x.image }
+                  : x
+              );
+            }
+            return [...prev, item];
+          });
+        }
       } catch (err) {
         setError(err.message);
       }
@@ -131,71 +187,57 @@ export const CartProvider = ({ children }) => {
         return updated;
       });
     }
-    alert(`Đã thêm ${product.name ?? 'sản phẩm'} vào giỏ!`);
   };
 
-  const updateItemQuantity = async (cartItemId, quantity) => {
-    if (quantity < 1) return removeItem(cartItemId);
-
+  const updateItemQuantity = async (cartItemId, newQuantity) => {
+    if (newQuantity < 1) return removeItem(cartItemId);
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.id === cartItemId
+          ? { ...item, qty: newQuantity, quantity: newQuantity }
+          : item
+      )
+    );
+    
     if (isAuthenticated && user) {
       try {
-        const res = await fetch(`${API_URL}/cart/update-item`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            cartItemId,
-            quantity,
-          }),
-        });
-        if (!res.ok) return handleApiError(res);
-        const response = await res.json();
-        const item = mapCartItemResponse(response?.data ?? {});
-        setCartItems((prev) =>
-          prev.map((x) =>
-            x.id === item.id || x.variantId === item.variantId
-              ? { ...x, qty: item.qty, price: item.price, name: item.name }
-              : x
-          )
-        );
+
+        const response = await capnhatitemgiohang({ cartItemId, quantity: newQuantity });
+        // Nếu API trả về data khác, update lại
+        if (response?.data) {
+          const updated = mapCartItemResponse(response.data);
+          setCartItems((prev) =>
+            prev.map((item) =>
+              item.id === cartItemId
+                ? {
+                    ...item,
+                    qty: updated.qty,
+                    quantity: updated.qty,
+                    price: updated.price || item.price,
+                  }
+                : item
+            )
+          );
+        }
       } catch (err) {
-        setError(err.message);
+        console.error("Lỗi:", err);
+        loadCart(); 
       }
-    } else {
-      setCartItems((prev) => {
-        const updated = prev.map((item) =>
-          item.id === cartItemId || item.variantId === cartItemId
-            ? { ...item, qty: quantity }
-            : item
-        );
-        saveLocalCart(updated);
-        return updated;
-      });
     }
   };
 
   const removeItem = async (cartItemId) => {
+
+    setCartItems((prev) => prev.filter((item) => item.id !== cartItemId));
+
+    
     if (isAuthenticated && user) {
       try {
-        const res = await fetch(`${API_URL}/cart/remove-item/${cartItemId}`, {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) return handleApiError(res);
-        setCartItems((prev) => prev.filter((item) => item.id !== cartItemId && item.variantId !== cartItemId));
+        await xoaitemgiohang(cartItemId);
       } catch (err) {
         setError(err.message);
+        loadCart();
       }
-    } else {
-      setCartItems((prev) => {
-        const updated = prev.filter((item) => item.id !== cartItemId && item.variantId !== cartItemId);
-        saveLocalCart(updated);
-        return updated;
-      });
     }
   };
 

@@ -1,7 +1,8 @@
-import React, { useParams, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { API_URL } from '../apiConfig';
+import { laydonhangbyid } from '../services/api';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const ChiTietDonHang = () => {
   const { id } = useParams();
@@ -21,32 +22,40 @@ const ChiTietDonHang = () => {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(`${API_URL}/Order/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data?.message || 'Không tìm thấy đơn hàng.');
-        }
-        const data = await res.json();
-        const orderData = data?.data;
+        const response = await laydonhangbyid(id);
+        const orderData = response?.data;
+
         if (!orderData) {
           throw new Error('Không tìm thấy dữ liệu đơn hàng.');
         }
+
+        const statusMap = {
+          Pending: 'Chờ xác nhận',
+          Shipping: 'Đang giao',
+          Completed: 'Đã giao',
+          Cancelled: 'Đã hủy'
+        };
+
+        const statusCode = orderData.status || 'Pending';
+        const statusLabel = statusMap[statusCode] || statusCode;
+
         setOrder({
           id: orderData.id,
-          date: orderData.createdDate ? new Date(orderData.createdDate).toLocaleString('vi-VN') : 'N/A',
-          status: orderData.status || 'Chờ xác nhận',
+          date: orderData.createdDate
+            ? new Date(orderData.createdDate).toLocaleString('vi-VN')
+            : 'N/A',
+          statusCode,
+          statusLabel,
           payment: orderData.paymentMethod || 'Chưa xác định',
           total: orderData.totalAmount || 0,
           items: (orderData.items ?? []).map((item) => ({
             name: item.productName || 'Sản phẩm',
             qty: item.quantity || 1,
             price: item.price || 0,
-            img: 'https://placehold.co/80x80/8B0000/FFF?text=Sản+phẩm',
-          })),
+            img:
+              resolveImageUrl(item.imagePath) ||
+              'https://placehold.co/80x80/8B0000/FFF?text=Sản+phẩm'
+          }))
         });
       } catch (err) {
         setError(err.message);
@@ -82,7 +91,7 @@ const ChiTietDonHang = () => {
           ← QUAY LẠI
         </Link>
         <span style={styles.orderIdHeader}>
-          MÃ ĐƠN HÀNG: {order.id} | <span style={{color: '#8B0000', fontWeight: 'bold'}}>{order.status.toUpperCase()}</span>
+          MÃ ĐƠN HÀNG: {order.id} | <span style={{color: '#8B0000', fontWeight: 'bold'}}>{order.statusLabel.toUpperCase()}</span>
         </span>
       </div>
 

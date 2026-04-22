@@ -1,5 +1,5 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'; // Đã gộp useLocation vào đây
 import Footer from '../components/Footer'; 
 import { CartContext } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +11,9 @@ const MainLayout = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const menuRef = useRef(null);
+  
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -37,17 +40,29 @@ const MainLayout = () => {
             <img src="/logo.png" alt="Logo Cafe" style={s.logoImg} />
           </Link>
           
+          {/* 2. CẬP NHẬT LOGIC ĐỔI MÀU CHO MENU TẠI ĐÂY */}
           <div style={s.links}>
-            <Link to="/" style={s.link}>TRANG CHỦ</Link>
-            <Link to="/gioi-thieu" style={s.link}>GIỚI THIỆU</Link>
-            <Link to="/san-pham" style={s.link}>SẢN PHẨM</Link>
-            <Link to="/bang-gia" style={s.link}>BẢNG GIÁ</Link>
-            <Link to="/lien-he" style={s.link}>LIÊN HỆ</Link>
-            <Link to="/lich-su-don-hang" style={s.link}>LỊCH SỬ</Link>
+            <Link to="/" style={{...s.link, ...(currentPath === '/' ? s.activeLink : {})}}>
+              TRANG CHỦ
+            </Link>
+            <Link to="/gioi-thieu" style={{...s.link, ...(currentPath === '/gioi-thieu' ? s.activeLink : {})}}>
+              GIỚI THIỆU
+            </Link>
+            <Link to="/san-pham" style={{...s.link, ...(currentPath.startsWith('/san-pham') ? s.activeLink : {})}}>
+              SẢN PHẨM
+            </Link>
+            <Link to="/bang-gia" style={{...s.link, ...(currentPath === '/bang-gia' ? s.activeLink : {})}}>
+              BẢNG GIÁ
+            </Link>
+            <Link to="/lien-he" style={{...s.link, ...(currentPath === '/lien-he' ? s.activeLink : {})}}>
+              LIÊN HỆ
+            </Link>
+            <Link to="/lich-su-don-hang" style={{...s.link, ...(currentPath.startsWith('/lich-su-don-hang') ? s.activeLink : {})}}>
+              LỊCH SỬ
+            </Link>
           </div>
 
           <div style={s.actions} ref={menuRef}>
-            {/* 🟢 ĐOẠN CHECK ĐĂNG NHẬP Ở NGAY ĐÂY */}
             {!isAuthenticated ? (
               <>
                 <Link to="/dang-nhap?mode=login" style={s.loginBtn}>
@@ -69,7 +84,6 @@ const MainLayout = () => {
                 {menuOpen && (
                   <div style={s.userDropdown}>
                     <div style={s.dropdownHeader}>
-                      {/* HIỂN THỊ TÊN TỪ BACKEND NẾU CÓ */}
                       Xin chào{user?.name ? `, ${user.name}` : ''}!
                     </div>
                     <hr style={s.divider} />
@@ -83,7 +97,7 @@ const MainLayout = () => {
             
             <div style={s.separator}></div>
             
-            <Link to="/gio-hang" style={s.cartLink}>
+            <Link to="/gio-hang" style={s.cartLink} >
               <span style={{ fontSize: '20px' }}>🛒</span>
               {cartCount > 0 && <span style={s.badge}>{cartCount}</span>}
             </Link>
@@ -100,26 +114,200 @@ const MainLayout = () => {
 };
 
 const s = {
-  app: { fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", backgroundColor: '#F9F8F3', minHeight: '100vh', color: '#3E2723', display: 'flex', flexDirection: 'column' },
-  nav: { backgroundColor: '#720e0e', height: '80px', color: 'white', position: 'sticky', top: 0, zIndex: 1000, display: 'flex', alignItems: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' },
-  container: { maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px', width: '100%', gap: '20px' },
-  logoWrapper: { display: 'flex', alignItems: 'center', textDecoration: 'none', height: '100%' },
-  logoImg: { height: '55px', width: 'auto', display: 'block', objectFit: 'contain' },
-  links: { display: 'flex', gap: '30px', alignItems: 'center' },
-  link: { color: '#F5F5F5', textDecoration: 'none', fontSize: '14px', fontWeight: '600', letterSpacing: '0.8px', textTransform: 'uppercase', transition: 'color 0.2s' },
-  content: { width: '100%', flex: 1 },
-  actions: { display: 'flex', gap: '15px', alignItems: 'center' },
-  loginBtn: { color: 'white', textDecoration: 'none', fontSize: '14px', fontWeight: '600', padding: '8px 18px', borderRadius: '24px', border: '1.5px solid rgba(255,255,255,0.7)', transition: 'all 0.2s' },
-  registerBtn: { color: '#720e0e', backgroundColor: '#F3C68F', textDecoration: 'none', fontSize: '14px', fontWeight: '700', padding: '9px 20px', borderRadius: '24px', border: 'none', boxShadow: '0 2px 8px rgba(243, 198, 143, 0.4)', transition: 'all 0.2s' },
-  userMenuWrapper: { position: 'relative' },
-  userButton: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.4)', color: 'white', borderRadius: '50%', width: '42px', height: '42px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' },
-  userDropdown: { position: 'absolute', top: 'calc(100% + 12px)', right: 0, minWidth: '180px', backgroundColor: 'white', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', padding: '16px', zIndex: 1000, border: '1px solid #EEEEEE' },
-  dropdownHeader: { fontSize: '15px', color: '#3E2723', fontWeight: '600', marginBottom: '8px', textAlign: 'center' },
-  divider: { border: 'none', borderTop: '1px solid #E0E0E0', margin: '10px 0' },
-  dropdownButton: { width: '100%', padding: '10px 0', borderRadius: '8px', border: '1px solid #ffcccc', backgroundColor: '#fff0f0', color: '#D32F2F', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s' },
-  separator: { width: '1px', height: '24px', backgroundColor: 'rgba(255,255,255,0.3)', margin: '0 5px' },
-  cartLink: { color: 'white', textDecoration: 'none', display: 'flex', alignItems: 'center', position: 'relative', padding: '5px' },
-  badge: { backgroundColor: '#F3C68F', color: '#720e0e', borderRadius: '50%', height: '20px', width: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', position: 'absolute', top: '-4px', right: '-8px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }
+  app: { 
+    fontFamily: "Arial, Helvetica, sans-serif", 
+    backgroundColor: '#F9F8F3', 
+    minHeight: '100vh', 
+    color: '#3E2723', 
+    display: 'flex', 
+    flexDirection: 'column' 
+  },
+  
+  nav: { 
+    backgroundColor: '#720e0e', 
+    height: '80px', 
+    color: 'white', 
+    position: 'sticky', 
+    top: 0, 
+    zIndex: 1000, 
+    display: 'flex', 
+    alignItems: 'center', 
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)' 
+  },
+  
+  container: { 
+    maxWidth: '1200px', 
+    margin: '0 auto', 
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    padding: '0 20px', 
+    width: '100%', 
+    gap: '20px' 
+  },
+  
+  logoWrapper: { 
+    display: 'flex', 
+    alignItems: 'center', 
+    textDecoration: 'none', 
+    height: '100%' 
+  },
+  
+  logoImg: { 
+    height: '55px', 
+    width: 'auto', 
+    display: 'block', 
+    objectFit: 'contain' 
+  },
+  
+  links: { 
+    display: 'flex', 
+    gap: '20px', 
+    alignItems: 'center' 
+  },
+  
+  link: { 
+    color: '#F5F5F5', 
+    textDecoration: 'none', 
+    fontSize: '14px', 
+    fontWeight: '600', 
+    letterSpacing: '0.8px', 
+    textTransform: 'uppercase', 
+    transition: 'all 0.3s ease',
+    padding: '8px 12px',
+    borderRadius: '6px'
+  },
+  
+  activeLink: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)', 
+    borderBottom: '3px solid #F3C68F', 
+    color: '#FFF'
+  },
+
+  content: { 
+    width: '100%', 
+    flex: 1 
+  },
+  
+  actions: { 
+    display: 'flex', 
+    gap: '15px', 
+    alignItems: 'center' 
+  },
+  
+  loginBtn: { 
+    color: 'white', 
+    textDecoration: 'none', 
+    fontSize: '14px', 
+    fontWeight: '600', 
+    padding: '8px 18px', 
+    borderRadius: '24px', 
+    border: '1.5px solid rgba(255,255,255,0.7)', 
+    transition: 'all 0.2s' 
+  },
+  
+  registerBtn: { 
+    color: '#720e0e', 
+    backgroundColor: '#F3C68F', 
+    textDecoration: 'none', 
+    fontSize: '14px', 
+    fontWeight: '700', 
+    padding: '9px 20px', 
+    borderRadius: '24px', 
+    border: 'none', 
+    boxShadow: '0 2px 8px rgba(243, 198, 143, 0.4)', 
+    transition: 'all 0.2s' 
+  },
+  
+  userMenuWrapper: { 
+    position: 'relative' 
+  },
+  
+  userButton: { 
+    background: 'rgba(255,255,255,0.1)', 
+    border: '1px solid rgba(255,255,255,0.4)', 
+    color: 'white', 
+    borderRadius: '50%', 
+    width: '42px', 
+    height: '42px', 
+    cursor: 'pointer', 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    transition: 'background 0.2s' 
+  },
+  
+  userDropdown: { 
+    position: 'absolute', 
+    top: 'calc(100% + 12px)', 
+    right: 0, 
+    minWidth: '180px', 
+    backgroundColor: 'white', 
+    borderRadius: '12px', 
+    boxShadow: '0 10px 30px rgba(0,0,0,0.15)', 
+    padding: '16px', 
+    zIndex: 1000, 
+    border: '1px solid #EEEEEE' 
+  },
+  
+  dropdownHeader: { 
+    fontSize: '15px', 
+    color: '#3E2723', 
+    fontWeight: '600', 
+    marginBottom: '8px', 
+    textAlign: 'center' 
+  },
+  
+  divider: { 
+    border: 'none', 
+    borderTop: '1px solid #E0E0E0', 
+    margin: '10px 0' 
+  },
+  
+  dropdownButton: { 
+    width: '100%', 
+    padding: '10px 0', 
+    borderRadius: '8px', 
+    border: '1px solid #ffcccc', 
+    backgroundColor: '#fff0f0', 
+    color: '#D32F2F', 
+    cursor: 'pointer', 
+    fontWeight: 'bold', 
+    transition: 'all 0.2s' 
+  },
+  
+  separator: { 
+    width: '1px', 
+    height: '24px', 
+    backgroundColor: 'rgba(255,255,255,0.3)', 
+    margin: '0 5px' 
+  },
+  
+  cartLink: { 
+    color: 'white', 
+    textDecoration: 'none', 
+    display: 'flex', 
+    alignItems: 'center', 
+    position: 'relative', 
+    padding: '5px' 
+  },
+  
+  badge: { 
+    backgroundColor: '#F3C68F', 
+    color: '#720e0e', 
+    borderRadius: '50%', 
+    height: '20px', 
+    width: '20px', 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    fontSize: '12px', 
+    position: 'absolute', 
+    top: '-4px', 
+    right: '-8px', 
+    fontWeight: 'bold', 
+    boxShadow: '0 2px 4px rgba(0,0,0,0.2)' 
+  }
 };
 
 export default MainLayout;

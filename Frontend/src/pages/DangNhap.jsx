@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { API_URL } from '../apiConfig';
+import { dangnhap as apiLogin, dangky as apiRegister } from '../services/api';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -14,12 +14,24 @@ const Auth = () => {
   const [message, setMessage] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     const mode = searchParams.get('mode');
     setIsLogin(mode !== 'register');
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    if (user?.role === 'Admin') {
+      navigate('/admin');
+    } else {
+      navigate('/');
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const toggleMode = () => {
     setMessage('');
@@ -38,20 +50,12 @@ const Auth = () => {
 
     if (isLogin) {
       try {
-        const res = await fetch(`${API_URL}/Auth/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: email.trim(),
-            password: password,
-          }),
+        const data = await apiLogin({
+          email: email.trim(),
+          password: password,
         });
 
-        const data = await res.json();
-
-        if (!res.ok || !data.data) {
+        if (!data.data) {
           setMessage(data.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
           return;
         }
@@ -60,7 +64,7 @@ const Auth = () => {
         setSuccess('Đăng nhập thành công!');
         setMessage('');
         setTimeout(() => {
-          navigate('/');
+          navigate(data.data.user.role === 'Admin' ? '/admin' : '/');
         }, 800);
       } catch (error) {
         setMessage('Lỗi kết nối server. Vui lòng thử lại.');
@@ -80,21 +84,14 @@ const Auth = () => {
     }
 
     try {
-      const res = await fetch(`${API_URL}/Auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: name.trim(),
-          email: email.trim(),
-          password: password,
-        }),
+      const data = await apiRegister({
+        name: name.trim(),
+        email: email.trim(),
+        role: 'Customer',
+        password: password,
       });
 
-      const data = await res.json();
-
-      if (!res.ok || !data.data) {
+      if (!data.data) {
         setMessage(data.message || 'Đăng ký thất bại. Vui lòng thử lại.');
         return;
       }

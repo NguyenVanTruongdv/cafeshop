@@ -1,25 +1,44 @@
 
-import React from 'react';
-
-const priceList = [
-  { id: 1, name: "Cà phê Robusta Rang Mộc", type: "Hạt / Bột", retail: "120,000đ", wholesale: "85,000đ" },
-  { id: 2, name: "Cà phê Arabica Cầu Đất", type: "Hạt / Bột", retail: "180,000đ", wholesale: "135,000đ" },
-  { id: 3, name: "Cà phê Culi Nguyên Chất", type: "Hạt", retail: "150,000đ", wholesale: "110,000đ" },
-  { id: 4, name: "Espresso Blend (Gu Đậm)", type: "Hạt", retail: "165,000đ", wholesale: "120,000đ" },
-  { id: 5, name: "Espresso Blend (Gu Mộc)", type: "Hạt", retail: "175,000đ", wholesale: "130,000đ" },
-  { id: 6, name: "Cà phê Moka Thượng Hạng", type: "Hạt / Bột", retail: "250,000đ", wholesale: "190,000đ" },
-];
+import React, { useState, useEffect } from 'react';
+import { laybienthesanpham } from '../services/api';
 
 const BangGia = () => {
+  const [variants, setVariants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchVariants = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await laybienthesanpham();
+        setVariants(data || []);
+      } catch (err) {
+        console.error(err);
+        setError('Không thể tải bảng giá từ server.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVariants();
+  }, []);
+
+  if (loading) {
+    return <div style={{ textAlign: 'center', padding: '50px' }}>Đang tải bảng giá...</div>;
+  }
+
+  if (error) {
+    return <div style={{ textAlign: 'center', padding: '50px', color: 'red' }}>{error}</div>;
+  }
+
   return (
     <div style={styles.container}>
-      
-      
       <div style={styles.headerSection}>
-        <h1 style={styles.title}>BẢNG GIÁ SỈ & LẺ CÀ PHÊ NGUYÊN CHẤT</h1>
+        <h1 style={styles.title}>BẢNG GIÁ SẢN PHẨM</h1>
         <div style={styles.redLine}></div>
         <p style={styles.subtitle}>
-          Kính gửi quý khách hàng, CHẤT COFFEE xin gửi đến quý khách bảng báo giá các dòng sản phẩm cà phê hạt rang mộc và cà phê bột nguyên chất mới nhất.
+          Bảng giá các biến thể sản phẩm cà phê từ hệ thống.
         </p>
       </div>
 
@@ -29,19 +48,21 @@ const BangGia = () => {
             <tr>
               <th style={{...styles.th, width: '10%', textAlign: 'center'}}>STT</th>
               <th style={{...styles.th, width: '40%'}}>TÊN SẢN PHẨM</th>
-              <th style={{...styles.th, width: '15%', textAlign: 'center'}}>PHÂN LOẠI</th>
-              <th style={{...styles.th, width: '17%', textAlign: 'right'}}>GIÁ BÁN LẺ (1Kg)</th>
-              <th style={{...styles.th, width: '18%', textAlign: 'right'}}>GIÁ BÁN SỈ (Từ 10Kg)</th>
+              <th style={{...styles.th, width: '20%', textAlign: 'center'}}>TRỌNG LƯỢNG</th>
+              <th style={{...styles.th, width: '15%', textAlign: 'right'}}>GIÁ</th>
+              <th style={{...styles.th, width: '15%', textAlign: 'center'}}>TỒN KHO</th>
             </tr>
           </thead>
           <tbody>
-            {priceList.map((item, index) => (
-              <tr key={item.id} style={{ backgroundColor: index % 2 === 0 ? '#fff' : '#fcf9f2' }}>
+            {variants.map((variant, index) => (
+              <tr key={variant.id} style={{ backgroundColor: index % 2 === 0 ? '#fff' : '#fcf9f2' }}>
                 <td style={{...styles.td, textAlign: 'center'}}>{index + 1}</td>
-                <td style={{...styles.td, fontWeight: 'bold', color: '#4B2C20'}}>{item.name}</td>
-                <td style={{...styles.td, textAlign: 'center'}}>{item.type}</td>
-                <td style={{...styles.td, textAlign: 'right', color: '#8B0000', fontWeight: 'bold'}}>{item.retail}</td>
-                <td style={{...styles.td, textAlign: 'right', color: '#A01515', fontWeight: 'bold'}}>{item.wholesale}</td>
+                <td style={{...styles.td, fontWeight: 'bold', color: '#4B2C20'}}>{variant.productName || 'N/A'}</td>
+                <td style={{...styles.td, textAlign: 'center'}}>{variant.weight || 'N/A'}</td>
+                <td style={{...styles.td, textAlign: 'right', color: '#8B0000', fontWeight: 'bold'}}>
+                  {variant.price ? `${variant.price.toLocaleString('vi-VN')} đ` : 'Liên hệ'}
+                </td>
+                <td style={{...styles.td, textAlign: 'center'}}>{variant.stock ?? 0}</td>
               </tr>
             ))}
           </tbody>
@@ -51,13 +72,10 @@ const BangGia = () => {
       <div style={styles.noteSection}>
         <h3 style={styles.noteTitle}>📌 Chính sách & Ghi chú:</h3>
         <ul style={styles.noteList}>
-          <li style={styles.noteItem}>Bảng giá trên <strong>chưa bao gồm 8% VAT</strong>.</li>
-          <li style={styles.noteItem}><strong>Miễn phí giao hàng</strong> nội thành TP.HCM cho đơn hàng từ 5kg trở lên.</li>
-          <li style={styles.noteItem}>Khách hàng mua sỉ số lượng lớn (từ 50kg, 100kg) vui lòng liên hệ trực tiếp Hotline để có chính sách chiết khấu tốt nhất.</li>
-          <li style={styles.noteItem}>Nhận rang gia công theo gu riêng của quán (cung cấp mẫu test miễn phí).</li>
+          <li style={styles.noteItem}>Giá có thể thay đổi theo thời gian. Vui lòng kiểm tra lại trước khi mua.</li>
+          <li style={styles.noteItem}>Liên hệ hotline để biết thêm chi tiết về sản phẩm.</li>
         </ul>
       </div>
-
     </div>
   );
 };

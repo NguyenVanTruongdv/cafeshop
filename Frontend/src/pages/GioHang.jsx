@@ -1,19 +1,24 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-
 import { CartContext } from '../context/CartContext';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const GioHang = () => {
   const { cartItems, cartTotal, updateItemQuantity, removeItem, loadCart, loading, error } = useContext(CartContext);
 
-  const handleDecrease = (item) => {
-    if (item.qty > 1) {
-      updateItemQuantity(item.id, item.qty - 1);
-    }
-  };
+    const handleDecrease = (item) => {
+      const currentQty = item.quantity ?? item.qty ?? 1;
+      if (currentQty > 1) {
+        updateItemQuantity(item.id, currentQty - 1);
+      } else if (currentQty === 1) {
+        removeItem(item.id);
+      }
+    };
+  
 
   const handleIncrease = (item) => {
-    updateItemQuantity(item.id, item.qty + 1);
+    const currentQty = item.quantity ?? item.qty ?? 1;
+    updateItemQuantity(item.id, currentQty + 1);
   };
 
   const handleRemove = (item) => {
@@ -65,26 +70,34 @@ const GioHang = () => {
                       </td>
                       <td style={styles.tdCenter}>
                         <img
-                          src={item.image || 'https://placehold.co/80x80/8B0000/FFF?text=No+Image'}
-                          alt={item.name}
+                          src={
+                            resolveImageUrl(
+                              item.image ||
+                                item.urlImgMain ||
+                                item.imageUrl ||
+                                item.ImageUrl ||
+                                ''
+                            ) || 'https://placehold.co/80x80/8B0000/FFF?text=No+Image'
+                          }
+                          alt={item.productName || item.name || 'Sản phẩm'}
                           style={styles.productImg}
                         />
                       </td>
-                      <td style={{ ...styles.td, color: '#4a6b8c' }}>
-                        {item.name}
+                      <td style={{ ...styles.td, color: '#4a6b8c', fontWeight: 'bold' }}>
+                        {item.name || 'Đang cập nhật tên SP...'}
                       </td>
                       <td style={styles.tdCenter}>
-                        <strong>{item.price.toLocaleString('vi-VN')}₫</strong>
+                        <strong>{item.price ? item.price.toLocaleString('vi-VN') : 0}₫</strong>
                       </td>
                       <td style={styles.tdCenter}>
                         <div style={styles.qtyBox}>
                           <button style={styles.qtyBtn} onClick={() => handleDecrease(item)}>-</button>
-                          <input type="text" value={item.qty} readOnly style={styles.qtyInput} />
+                          <input type="text" value={item.quantity ?? item.qty ?? 1} readOnly style={styles.qtyInput} />
                           <button style={styles.qtyBtn} onClick={() => handleIncrease(item)}>+</button>
                         </div>
                       </td>
                       <td style={styles.tdCenter}>
-                        <strong>{(item.price * item.qty).toLocaleString('vi-VN')}₫</strong>
+                        <strong>{((item.price || 0) * (item.quantity ?? item.qty ?? 1)).toLocaleString('vi-VN')}₫</strong>
                       </td>
                     </tr>
                   ))}
@@ -121,8 +134,8 @@ const GioHang = () => {
                 </tbody>
               </table>
              <Link to="/thanh-toan" style={{...styles.checkoutBtn, display: 'block', textAlign: 'center', textDecoration: 'none'}}>
-  TIẾN HÀNH THANH TOÁN
-</Link>
+               TIẾN HÀNH THANH TOÁN
+             </Link>
             </div>
           </div>
 
@@ -132,168 +145,161 @@ const GioHang = () => {
   );
 };
 const styles = {
-  container: {
-    maxWidth: '1200px',
-    margin: '40px auto',
-    padding: '0 20px',
-    backgroundColor: '#fff',
-    minHeight: '60vh'
+  container: { 
+    maxWidth: '1200px', 
+    margin: '40px auto', 
+    padding: '0 20px', 
+    backgroundColor: '#fff', 
+    minHeight: '60vh' 
   },
-  pageTitle: {
-    fontSize: '24px',
-    color: '#8B0000',
-    marginBottom: '30px',
-    textTransform: 'uppercase',
-    borderBottom: '2px solid #8B0000',
-    paddingBottom: '10px',
-    display: 'inline-block'
+  pageTitle: { 
+    fontSize: '24px', 
+    color: '#8B0000', 
+    marginBottom: '30px', 
+    textTransform: 'uppercase', 
+    borderBottom: '2px solid #8B0000', 
+    paddingBottom: '10px', 
+    display: 'inline-block' 
   },
-  cartWrapper: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '30px',
-    alignItems: 'flex-start'
+  cartWrapper: { 
+    display: 'flex', 
+    flexWrap: 'wrap', 
+    gap: '30px', 
+    alignItems: 'flex-start' 
   },
-  
-  // --- CỘT TRÁI ---
-  leftCol: {
-    flex: '2 1 700px',
+  leftCol: { 
+    flex: '2 1 700px' 
   },
-  tableResponsive: {
-    overflowX: 'auto',
-    marginBottom: '20px'
+  tableResponsive: { 
+    overflowX: 'auto', 
+    marginBottom: '20px' 
   },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    minWidth: '600px'
+  table: { 
+    width: '100%', 
+    borderCollapse: 'collapse', 
+    minWidth: '600px' 
   },
-  th: {
-    padding: '15px',
-    border: '1px solid #eaeaea',
-    backgroundColor: '#fdfdfd',
-    color: '#666',
-    fontSize: '14px',
-    textAlign: 'center'
+  th: { 
+    padding: '15px', 
+    border: '1px solid #eaeaea', 
+    backgroundColor: '#fdfdfd', 
+    color: '#666', 
+    fontSize: '14px', 
+    textAlign: 'center' 
   },
-  td: {
-    padding: '15px',
-    border: '1px solid #eaeaea',
-    fontSize: '15px',
-    color: '#333'
+  td: { 
+    padding: '15px', 
+    border: '1px solid #eaeaea', 
+    fontSize: '15px', 
+    color: '#333' 
   },
-  tdCenter: {
-    padding: '15px',
-    border: '1px solid #eaeaea',
-    textAlign: 'center',
-    fontSize: '15px'
+  tdCenter: { 
+    padding: '15px', 
+    border: '1px solid #eaeaea', 
+    textAlign: 'center', 
+    fontSize: '15px' 
   },
-  removeBtn: {
-    background: 'none',
-    border: '1px solid #ccc',
-    borderRadius: '50%',
-    width: '24px',
-    height: '24px',
-    cursor: 'pointer',
-    color: '#999',
-    fontSize: '16px',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center'
+  removeBtn: { 
+    background: 'none', 
+    border: '1px solid #ccc', 
+    borderRadius: '50%', 
+    width: '24px', 
+    height: '24px', 
+    cursor: 'pointer', 
+    color: '#999', 
+    fontSize: '16px', 
+    display: 'inline-flex', 
+    alignItems: 'center', 
+    justifyContent: 'center' 
   },
-  productImg: {
-    width: '60px',
-    height: 'auto',
-    display: 'block',
-    margin: '0 auto'
+  productImg: { 
+    width: '60px', 
+    height: 'auto', 
+    display: 'block', 
+    margin: '0 auto' 
   },
-  qtyBox: {
-    display: 'inline-flex',
-    border: '1px solid #ddd',
-    borderRadius: '3px'
+  qtyBox: { 
+    display: 'inline-flex', 
+    border: '1px solid #ddd', 
+    borderRadius: '3px' 
   },
-  qtyBtn: {
-    background: '#f9f9f9',
-    border: 'none',
-    padding: '5px 10px',
-    cursor: 'pointer',
-    color: '#555'
+  qtyBtn: { 
+    background: '#f9f9f9', 
+    border: 'none', 
+    padding: '5px 10px', 
+    cursor: 'pointer', 
+    color: '#555' 
   },
-  qtyInput: {
-    width: '40px',
-    textAlign: 'center',
-    border: 'none',
-    borderLeft: '1px solid #ddd',
-    borderRight: '1px solid #ddd',
-    outline: 'none'
+  qtyInput: { 
+    width: '40px', 
+    textAlign: 'center', 
+    border: 'none', 
+    borderLeft: '1px solid #ddd', 
+    borderRight: '1px solid #ddd', 
+    outline: 'none' 
   },
-  
-  // Nút hành động
-  actionRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: '15px'
+  actionRow: { 
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    flexWrap: 'wrap', 
+    gap: '15px' 
   },
-  continueBtn: {
-    textDecoration: 'none',
-    color: '#8B0000',
-    border: '2px solid #8B0000',
-    padding: '10px 20px',
-    fontWeight: 'bold',
-    fontSize: '14px',
-    backgroundColor: 'transparent',
-    display: 'inline-block',
-    transition: '0.3s'
+  continueBtn: { 
+    textDecoration: 'none', 
+    color: '#8B0000', 
+    border: '2px solid #8B0000', 
+    padding: '10px 20px', 
+    fontWeight: 'bold', 
+    fontSize: '14px', 
+    backgroundColor: 'transparent', 
+    display: 'inline-block', 
+    transition: '0.3s' 
   },
-  updateBtn: {
-    backgroundColor: '#A7665D', // Màu nâu đỏ nhạt giống ảnh
-    color: 'white',
-    border: 'none',
-    padding: '12px 20px',
-    fontWeight: 'bold',
-    fontSize: '14px',
-    cursor: 'pointer'
+  updateBtn: { 
+    backgroundColor: '#A7665D', 
+    color: 'white', 
+    border: 'none', 
+    padding: '12px 20px', 
+    fontWeight: 'bold', 
+    fontSize: '14px', 
+    cursor: 'pointer' 
   },
-
-  // --- CỘT PHẢI ---
-  rightCol: {
-    flex: '1 1 350px',
+  rightCol: { 
+    flex: '1 1 350px' 
   },
-  summaryBox: {
-    border: '1px solid #eaeaea',
-    padding: '30px 20px',
-    backgroundColor: '#fdfdfd'
+  summaryBox: { 
+    border: '1px solid #eaeaea', 
+    padding: '30px 20px', 
+    backgroundColor: '#fdfdfd' 
   },
-  summaryTitle: {
-    fontSize: '16px',
-    color: '#555',
-    borderBottom: '1px solid #eaeaea',
-    paddingBottom: '15px',
-    marginBottom: '20px',
-    textAlign: 'center'
+  summaryTitle: { 
+    fontSize: '16px', 
+    color: '#555', 
+    borderBottom: '1px solid #eaeaea', 
+    paddingBottom: '15px', 
+    marginBottom: '20px', 
+    textAlign: 'center' 
   },
-  summaryTable: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    marginBottom: '25px'
+  summaryTable: { 
+    width: '100%', 
+    borderCollapse: 'collapse', 
+    marginBottom: '25px' 
   },
-  summaryTd: {
-    padding: '15px 10px',
-    border: '1px solid #eaeaea',
-    color: '#555'
+  summaryTd: { 
+    padding: '15px 10px', 
+    border: '1px solid #eaeaea', 
+    color: '#555' 
   },
-  checkoutBtn: {
-    width: '100%',
-    backgroundColor: '#D16B4A', // Màu cam gạch y hệt ảnh
-    color: 'white',
-    border: 'none',
-    padding: '15px',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s'
+  checkoutBtn: { 
+    width: '100%', 
+    backgroundColor: '#D16B4A', 
+    color: 'white', 
+    border: 'none', 
+    padding: '15px', 
+    fontSize: '16px', 
+    fontWeight: 'bold', 
+    cursor: 'pointer', 
+    transition: 'background-color 0.3s' 
   }
 };
-
 export default GioHang;

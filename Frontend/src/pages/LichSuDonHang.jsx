@@ -1,42 +1,18 @@
-// File: src/pages/LichSuDonHang.jsx
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 
-const mockOrders = [
-  {
-    id: "ORD-20260330-01",
-    date: "30/03/2026 14:30",
-    status: "Đã giao",
-    total: 459000,
-    items: [
-      { name: "Cà phê nguyên chất Hạt CULI", qty: 1, price: 320000, img: "https://placehold.co/80x80/8B0000/FFF?text=Culi" },
-      { name: "Cacao Nguyên Chất", qty: 1, price: 139000, img: "https://placehold.co/80x80/4B2C20/FFF?text=Cacao" }
-    ]
-  },
-  {
-    id: "ORD-20260325-88",
-    date: "25/03/2026 09:15",
-    status: "Đang giao",
-    total: 370000,
-    items: [
-      { name: "Cà phê Hạt ESPRESSO BLEND 1", qty: 1, price: 370000, img: "https://placehold.co/80x80/8B0000/FFF?text=Esp1" }
-    ]
-  },
-  {
-    id: "ORD-20260320-42",
-    date: "20/03/2026 18:45",
-    status: "Chờ xác nhận",
-    total: 165000,
-    items: [
-      { name: "Cà phê Hạt Thượng Hạng 2", qty: 1, price: 165000, img: "https://placehold.co/80x80/4B2C20/FFF?text=TH2" }
-    ]
-  }
-];
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { laydonhangbyuser } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const tabs = ['Tất cả', 'Chờ xác nhận', 'Đang giao', 'Đã giao', 'Đã hủy'];
 
 const LichSuDonHang = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   
   // State quản lý Menu chính (profile hoặc orders)
   const [activeMenu, setActiveMenu] = useState('orders');
@@ -44,10 +20,58 @@ const LichSuDonHang = () => {
   // State quản lý Tab lọc trong mục Đơn mua
   const [activeTab, setActiveTab] = useState('Tất cả');
 
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!user) return;
+      setLoading(true);
+      setError('');
+      try {
+        const response = await laydonhangbyuser(user.id);
+        const rawOrders = response?.data || [];
+
+        const statusMap = {
+          Pending: 'Chờ xác nhận',
+          Shipping: 'Đang giao',
+          Completed: 'Đã giao',
+          Cancelled: 'Đã hủy'
+        };
+
+        const mappedOrders = rawOrders.map((o) => {
+          const statusCode = o.status || 'Pending';
+          const statusLabel = statusMap[statusCode] || statusCode;
+
+          return {
+            id: o.id,
+            statusCode,
+            statusLabel,
+            total: o.totalAmount || 0,
+            items: (o.items || []).map((item) => ({
+              name: item.productName || 'Sản phẩm',
+              qty: item.quantity || 1,
+              price: item.price || 0,
+              img:
+                resolveImageUrl(item.imagePath) ||
+                'https://placehold.co/80x80/8B0000/FFF?text=Sản+phẩm'
+            }))
+          };
+        });
+
+        setOrders(mappedOrders);
+      } catch (err) {
+        console.error(err);
+        setError('Không thể tải lịch sử đơn hàng.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, [user]);
+
   // Logic lọc đơn hàng
-  const filteredOrders = activeTab === 'Tất cả' 
-    ? mockOrders 
-    : mockOrders.filter(order => order.status === activeTab);
+  const filteredOrders =
+    activeTab === 'Tất cả'
+      ? orders
+      : orders.filter((order) => order.statusLabel === activeTab);
 
   // Hàm xử lý đăng xuất
   const handleLogout = () => {
@@ -114,7 +138,17 @@ const LichSuDonHang = () => {
         ))}
       </div>
 
-      {filteredOrders.length === 0 ? (
+      {loading ? (
+        <div style={styles.emptyState}>
+          <div style={styles.emptyIcon}>⏳</div>
+          <p>Đang tải đơn hàng...</p>
+        </div>
+      ) : error ? (
+        <div style={styles.emptyState}>
+          <div style={styles.emptyIcon}>❌</div>
+          <p>{error}</p>
+        </div>
+      ) : filteredOrders.length === 0 ? (
         <div style={styles.emptyState}>
           <div style={styles.emptyIcon}>📦</div>
           <p>Chưa có đơn hàng nào trong mục này.</p>
@@ -125,7 +159,7 @@ const LichSuDonHang = () => {
             <div key={order.id} style={styles.orderCard}>
               <div style={styles.orderHeader}>
                 <span style={styles.orderId}>Mã đơn: <strong>{order.id}</strong></span>
-                <span style={styles.orderStatus}>{order.status.toUpperCase()}</span>
+                <span style={styles.orderStatus}>{order.statusLabel.toUpperCase()}</span>
               </div>
               <div style={styles.orderBody}>
                 {order.items.map((item, index) => (
@@ -136,14 +170,14 @@ const LichSuDonHang = () => {
                       <p style={styles.productQty}>x{item.qty}</p>
                     </div>
                     <div style={styles.productPrice}>
-                      {item.price.toLocaleString('vi-VN')}₫
+                     {(item.price || 0).toLocaleString('vi-VN')}₫
                     </div>
                   </div>
                 ))}
               </div>
               <div style={styles.orderFooter}>
                 <div style={styles.orderTotal}>
-                  Thành tiền: <span style={styles.totalPrice}>{order.total.toLocaleString('vi-VN')}₫</span>
+                  Thành tiền: <span style={styles.totalPrice}>{(order.total || 0).toLocaleString('vi-VN')}₫</span>
                 </div>
                 <div style={styles.actionButtons}>
                   <Link to={`/lich-su-don-hang/${order.id}`} style={styles.btnOutline}>

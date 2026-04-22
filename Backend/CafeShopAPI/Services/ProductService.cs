@@ -210,6 +210,7 @@ public class ProductService
         var products = db.Products
                         .Include(p => p.Category)
                         .Include(p => p.ProductImages)
+                        .Include(p => p.ProductVariants)
                         .AsQueryable();
 
         if (!string.IsNullOrEmpty(name))
@@ -225,7 +226,8 @@ public class ProductService
             // 🔥 FIX QUAN TRỌNG
             urlImgMain = p.ProductImages
                             .Where(i => i.IsMain == true)
-                            .Select(i => i.ImageUrl).FirstOrDefault()
+                            .Select(i => i.ImageUrl).FirstOrDefault(),
+            Price = p.ProductVariants.OrderBy(v => v.Id).Select(v => v.Price).FirstOrDefault()
         }).ToListAsync();
     }
 }
