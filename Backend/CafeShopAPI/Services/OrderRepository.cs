@@ -33,8 +33,8 @@ namespace CafeShopAPI.Services
         }
         public async Task<int> DeleteAsync(int id)
         {
-            var order= await _context.Orders.FindAsync(id);
-            if (order==null)
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null)
             {
                 return 0;
             }
@@ -47,14 +47,18 @@ namespace CafeShopAPI.Services
                 .Include(o => o.OrderDetails)
                 .ThenInclude(od => od.Variant)
                 .ThenInclude(v => v.Product)
-                .FirstOrDefaultAsync(o=>o.Id==orderId);
+                .ThenInclude(p => p.ProductImages)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
         }
         public async Task<List<Order>> GetOrderByUserIdAsync(int userId)
         {
             return await _context.Orders
-                .Where(o=>o.UserId==userId)
+                .Where(o => o.UserId == userId)
                 .Include(o => o.OrderDetails)
-                .OrderByDescending(o=>o.Id)
+                .ThenInclude(od => od.Variant)
+                .ThenInclude(v => v.Product)
+                .ThenInclude(p => p.ProductImages)
+                .OrderByDescending(o => o.Id)
                 .ToListAsync();
         }
         public async Task<Order> CreateOrderFromCartAsync(int userId, int addressId)
@@ -63,7 +67,7 @@ namespace CafeShopAPI.Services
                 .Include(c => c.CartItems)
                 .ThenInclude(ci => ci.Variant)
                 .FirstOrDefaultAsync(c => c.UserId == userId);
-            if (cart==null||!cart.CartItems.Any())
+            if (cart == null || !cart.CartItems.Any())
             {
                 throw new Exception("Cart is Empty");
             }
@@ -75,7 +79,7 @@ namespace CafeShopAPI.Services
                 PaymentMethod = "COD",
                 OrderDetails = new List<OrderDetail>()
             };
-            decimal total= 0;
+            decimal total = 0;
             foreach (var ci in cart.CartItems)
             {
                 var price = ci.Variant.Price ?? 0;

@@ -58,9 +58,13 @@ namespace CafeShopAPI.Controllers
                     VariantId = od.VariantId,
                     Quantity = od.Quantity,
                     Price = od.Price,
-                    ProductName = od.Variant?.Product?.Name??"N/A"
+                    ProductName = od.Variant?.Product?.Name ?? "N/A",
+
+                    Weight = od.Variant?.Weight, 
+                    ImageUrl = od.Variant?.Product?.ProductImages
+                    ?.FirstOrDefault()?.ImageUrl 
                 }).ToList()
             };
         }
     }
-} 
+}
