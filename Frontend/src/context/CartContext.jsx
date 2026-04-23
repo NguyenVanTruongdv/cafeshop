@@ -19,6 +19,7 @@ const mapCartItemResponse = (item) => {
   const rawImage = item.image ?? item.urlImgMain ?? item.imageUrl ?? item.ImageUrl ?? '';
   return {
     id: item.id ?? item.Id,
+    productId: item.productId ?? item.ProductId ?? item.productID,
     variantId: item.variantId ?? item.VariantId ?? item.VariantID,
     qty: item.quantity ?? item.Quantity ?? item.qty ?? 1,
     price: Number(item.price ?? item.Price ?? 0),
@@ -64,6 +65,7 @@ export const CartProvider = ({ children }) => {
         
         const productImageMap = {};
         const variantImageMap = {};
+        const variantNameMap = {};
 
         products.forEach(product => {
           const imageSource =
@@ -86,16 +88,24 @@ export const CartProvider = ({ children }) => {
             }
           }
 
+          const productName = product.name || product.Name || '';
           const variants = product.Variants || product.variants || [];
           variants.forEach((variant) => {
-            if (variant?.id != null && resolved) {
-              variantImageMap[variant.id] = resolved;
+            if (variant?.id != null) {
+              if (resolved) {
+                variantImageMap[variant.id] = resolved;
+              }
+              const variantLabel = variant.weight || variant.Weight || variant.name || variant.Name || '';
+              variantNameMap[variant.id] = variantLabel
+                ? `${productName}${variantLabel ? ` - ${variantLabel}` : ''}`
+                : productName;
             }
           });
         });
         
         items = items.map(item => ({
           ...item,
+          name: variantNameMap[item.variantId] || item.name,
           image:
             item.image ||
             variantImageMap[item.variantId] ||
@@ -127,26 +137,42 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (product, quantity = 1) => {
     if (isAuthenticated && user) {
-      const variantId = product.variantId ?? product.Variants?.[0]?.id ?? product.variantID ?? product.id;
+      const productId = product.productId ?? product.id ?? product.ProductId;
+      const variantId =
+        product.variantId ??
+        product.variantID ??
+        product.VariantId ??
+        product.selectedVariant?.id ??
+        product.Variants?.[0]?.id;
+
       try {
         const response = await themitemvaogiohang({
           userId: user.id,
+          productId,
           variantId,
           quantity,
         });
         if (response?.data) {
           let item = mapCartItemResponse(response.data);
-          
-          // Nếu backend không gửi ảnh, lấy từ product param
+
           if (!item.image && product.image) {
             item = { ...item, image: product.image };
           }
+
+          item = {
+            ...item,
+            productId: productId ?? item.productId,
+            variantId: variantId ?? item.variantId,
+            name: product.name || item.name,
+          };
           
           setCartItems((prev) => {
-            const existing = prev.find((x) => x.id === item.id || x.variantId === item.variantId);
+            const existing = prev.find(
+              (x) => x.productId === item.productId && x.variantId === item.variantId
+            );
             if (existing) {
               return prev.map((x) =>
-                x.id === existing.id || x.variantId === existing.variantId
+                x.productId === item.productId && x.variantId === item.variantId
                   ? { ...x, qty: item.qty, price: item.price, name: item.name, image: item.image || x.image }
                   : x
               );
@@ -159,10 +185,17 @@ export const CartProvider = ({ children }) => {
       }
     } else {
       setCartItems((prev) => {
-        const existingItem = prev.find((item) => item.id === product.id || item.variantId === product.variantId);
+        const pId = product.id ?? product.productId ?? product.ProductId;
+        const vId =
+          product.variantId ??
+          product.variantID ??
+          product.VariantId ??
+          product.selectedVariant?.id;
+
+        const existingItem = prev.find((item) => item.productId === pId && item.variantId === vId);
         const updated = existingItem
           ? prev.map((item) =>
-              item.id === existingItem.id
+              item.productId === pId && item.variantId === vId
                 ? {
                     ...item,
                     qty: item.qty + quantity,
@@ -171,18 +204,19 @@ export const CartProvider = ({ children }) => {
                     image: product.image ?? item.image,
                   }
                 : item
-            )
-          : [
-              ...prev,
-              {
-                id: product.id ?? product.variantId,
-                variantId: product.variantId,
-                qty: quantity,
-                price: Number(product.price ?? 0),
-                name: product.name ?? 'Sản phẩm',
-                image: product.image ?? '',
-              },
-            ];
+          )
+        : [
+            ...prev,
+            {
+              id: `${pId}-${vId ?? 'default'}`,
+              productId: pId,
+              variantId: vId,
+              qty: quantity,
+              price: Number(product.price ?? 0),
+              name: product.name ?? 'Sản phẩm',
+              image: product.image ?? '',
+            },
+          ];
         saveLocalCart(updated);
         return updated;
       });

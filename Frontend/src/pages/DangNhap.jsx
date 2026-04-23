@@ -43,15 +43,23 @@ const Auth = () => {
     e.preventDefault();
     setMessage('');
 
-    if (!email.trim() || !password.trim()) {
-      setMessage('Vui lòng nhập email và mật khẩu.');
+    const trimmedEmail = email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!trimmedEmail || !password) {
+      setMessage('Vui lòng điền đầy đủ email và mật khẩu.');
       return;
     }
+
+    /*if (!emailRegex.test(trimmedEmail)) {
+      setMessage('Định dạng email không hợp lệ. Vui lòng kiểm tra lại.');
+      return;
+    }*/
 
     if (isLogin) {
       try {
         const data = await apiLogin({
-          email: email.trim(),
+          email: trimmedEmail,
           password: password,
         });
 
@@ -73,6 +81,17 @@ const Auth = () => {
       return;
     }
 
+    // Validation cho form đăng ký
+    /*const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (password.length < 8) {
+      setMessage('Mật khẩu phải có ít nhất 8 ký tự.');
+      return;
+    }
+    if (!passwordRegex.test(password)) {
+      setMessage('Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt.');
+      return;
+    }*/
+
     if (!name.trim()) {
       setMessage('Vui lòng nhập họ tên.');
       return;
@@ -86,7 +105,7 @@ const Auth = () => {
     try {
       const data = await apiRegister({
         name: name.trim(),
-        email: email.trim(),
+        email: trimmedEmail,
         role: 'Customer',
         password: password,
       });

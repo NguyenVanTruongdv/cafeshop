@@ -46,11 +46,11 @@ const LichSuDonHang = () => {
             statusLabel,
             total: o.totalAmount || 0,
             items: (o.items || []).map((item) => ({
-              name: item.productName || 'Sản phẩm',
+              name: item.productName || item.productName || 'Sản phẩm',
               qty: item.quantity || 1,
               price: item.price || 0,
               img:
-                resolveImageUrl(item.imagePath) ||
+                resolveImageUrl(item.imageUrl || item.imagePath) ||
                 'https://placehold.co/80x80/8B0000/FFF?text=Sản+phẩm'
             }))
           };

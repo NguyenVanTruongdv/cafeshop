@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react'; 
 import { Link } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
+import { laysanphambyid } from '../services/api';
 import { resolveImageUrl } from '../utils/imageUrl';
 
 const ProductCard = ({ product }) => {
@@ -13,18 +14,45 @@ const ProductCard = ({ product }) => {
     'https://placehold.co/300x300/8B0000/FFF?text=Hinh+Anh+Loi';
   const price = product.price ?? product.Variants?.[0]?.price ?? 0;
   const type = product.type || product.categoryName || 'Sản phẩm';
-  const variantId = product.variantId ?? product.Variants?.[0]?.id ?? product.id;
+  const variantId = product.variantId ?? product.Variants?.[0]?.id;
   
   const cardProduct = { ...product, price, image: imageUrl, type, variantId };
 
-  const handleAddToCart = () => {
-    if (addToCart) {
-      addToCart(cardProduct);
+  const handleAddToCart = async () => {
+    let productToAdd = { ...cardProduct };
+
+    if (!productToAdd.variantId && product.id) {
+      try {
+        const detail = await laysanphambyid(product.id);
+        const variant = detail?.Variants?.[0] || detail?.variants?.[0];
+        if (variant) {
+          productToAdd.variantId = variant.id ?? variant.Id;
+          productToAdd.price = productToAdd.price ?? variant.price ?? variant.Price ?? 0;
+          productToAdd.name =
+            productToAdd.name ||
+            `${product.name || product.Name}${variant.weight || variant.Weight ? ` - ${variant.weight || variant.Weight}` : ''}`;
+        }
+      } catch (error) {
+        console.error('Không thể tải chi tiết sản phẩm để thêm vào giỏ:', error);
+      }
     }
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 2500);
+
+    if (!productToAdd.variantId) {
+      console.error('Không xác định biến thể sản phẩm khi thêm từ thẻ sản phẩm', productToAdd);
+      return;
+    }
+
+    if (addToCart) {
+      try {
+        await addToCart(productToAdd);
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 2500);
+      } catch (error) {
+        console.error('Thêm vào giỏ hàng thất bại:', error);
+      }
+    }
   };
 
   return (
